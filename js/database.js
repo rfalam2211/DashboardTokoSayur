@@ -1,7 +1,7 @@
 // IndexedDB Database Management
 
 const DB_NAME = 'TokoKuDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 let db = null;
 
@@ -46,6 +46,13 @@ function initDB() {
                 const expensesStore = db.createObjectStore('expenses', { keyPath: 'id' });
                 expensesStore.createIndex('date', 'date', { unique: false });
                 expensesStore.createIndex('category', 'category', { unique: false });
+            }
+
+            // Users store
+            if (!db.objectStoreNames.contains('users')) {
+                const usersStore = db.createObjectStore('users', { keyPath: 'id' });
+                usersStore.createIndex('username', 'username', { unique: true });
+                usersStore.createIndex('role', 'role', { unique: false });
             }
 
             console.log('Database setup complete');
@@ -333,4 +340,148 @@ function getAllExpenses(filter = null) {
         };
         request.onerror = () => reject(request.error);
     });
+}
+
+// ===== USERS CRUD =====
+
+/**
+ * Add a new user
+ * @param {Object} user - User object
+ * @returns {Promise} Promise that resolves with the user ID
+ */
+function addUser(user) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['users'], 'readwrite');
+        const store = transaction.objectStore('users');
+
+        const userData = {
+            id: generateId(),
+            username: user.username,
+            password: user.password, // In production, this should be hashed
+            role: user.role, // 'admin' or 'kasir'
+            name: user.name,
+            createdAt: new Date().toISOString()
+        };
+
+        const request = store.add(userData);
+
+        request.onsuccess = () => resolve(userData.id);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+/**
+ * Get user by username
+ * @param {string} username - Username
+ * @returns {Promise} Promise that resolves with user object
+ */
+function getUserByUsername(username) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['users'], 'readonly');
+        const store = transaction.objectStore('users');
+        const index = store.index('username');
+        const request = index.get(username);
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+/**
+ * Get all users
+ * @returns {Promise} Promise that resolves with array of users
+ */
+function getAllUsers() {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['users'], 'readonly');
+        const store = transaction.objectStore('users');
+        const request = store.getAll();
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+/**
+ * Update user
+ * @param {string} id - User ID
+ * @param {Object} updates - Object with fields to update
+ * @returns {Promise} Promise that resolves when update is complete
+ */
+function updateUser(id, updates) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['users'], 'readwrite');
+        const store = transaction.objectStore('users');
+
+        const getRequest = store.get(id);
+
+        getRequest.onsuccess = () => {
+            const user = getRequest.result;
+
+            if (!user) {
+                reject(new Error('User not found'));
+                return;
+            }
+
+            // Update fields
+            Object.keys(updates).forEach(key => {
+                user[key] = updates[key];
+            });
+
+            user.updatedAt = new Date().toISOString();
+
+            const updateRequest = store.put(user);
+            updateRequest.onsuccess = () => resolve();
+            updateRequest.onerror = () => reject(updateRequest.error);
+        };
+
+        getRequest.onerror = () => reject(getRequest.error);
+    });
+}
+
+/**
+ * Delete user
+ * @param {string} id - User ID
+ * @returns {Promise} Promise that resolves when deletion is complete
+ */
+function deleteUser(id) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['users'], 'readwrite');
+        const store = transaction.objectStore('users');
+        const request = store.delete(id);
+
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+    });
+}
+
+/**
+ * Seed default users (admin and kasir)
+ * @returns {Promise} Promise that resolves when seeding is complete
+ */
+async function seedDefaultUsers() {
+    try {
+        const users = await getAllUsers();
+
+        // Only seed if no users exist
+        if (users.length === 0) {
+            await addUser({
+                username: 'admin',
+                password: 'admin123',
+                role: 'admin',
+                name: 'Administrator'
+            });
+
+            await addUser({
+                username: 'kasir',
+                password: 'kasir123',
+                role: 'kasir',
+                name: 'Kasir'
+            });
+
+            console.log('Default users seeded successfully');
+        }
+    } catch (error) {
+        console.error('Error seeding default users:', error);
+    }
 }

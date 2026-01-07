@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - TokoKu</title>
+    <meta name="description" content="Login ke sistem manajemen toko">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #10b981;
+            --color-primary-dark: #059669;
+            --color-white: #ffffff;
+            --color-gray-50: #f9fafb;
+            --color-gray-100: #f3f4f6;
+            --color-gray-300: #d1d5db;
+            --color-gray-500: #6b7280;
+            --color-gray-700: #374151;
+            --color-gray-800: #1f2937;
+            --color-gray-900: #111827;
+            --color-danger: #ef4444;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .login-container {
+            background: var(--color-white);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            width: 100%;
+            max-width: 420px;
+            overflow: hidden;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            padding: 2.5rem 2rem;
+            text-align: center;
+            color: var(--color-white);
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 64px;
+            height: 64px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 1rem;
+            margin-bottom: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo svg {
+            width: 36px;
+            height: 36px;
+        }
+
+        .login-header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-header p {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .login-body {
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--color-gray-700);
+            font-size: 0.9rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-gray-500);
+        }
+
+        .input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            border: 2px solid var(--color-gray-300);
+            border-radius: var(--radius-lg);
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all var(--transition-base);
+            background: var(--color-white);
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .input.error {
+            border-color: var(--color-danger);
+        }
+
+        .error-message {
+            color: var(--color-danger);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.875rem 1.5rem;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-base);
+            font-family: inherit;
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            color: var(--color-white);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .divider {
+            margin: 1.5rem 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 100%;
+            height: 1px;
+            background: var(--color-gray-300);
+        }
+
+        .divider span {
+            background: var(--color-white);
+            padding: 0 1rem;
+            position: relative;
+            color: var(--color-gray-500);
+            font-size: 0.875rem;
+        }
+
+        .default-users {
+            background: var(--color-gray-50);
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .default-users h3 {
+            font-size: 0.875rem;
+            color: var(--color-gray-700);
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            font-size: 0.875rem;
+            color: var(--color-gray-600);
+        }
+
+        .user-item code {
+            background: var(--color-white);
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            color: var(--color-primary);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: var(--radius-lg);
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        @media (max-width: 480px) {
+            .login-header {
+                padding: 2rem 1.5rem;
+            }
+
+            .login-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .login-body {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="logo">
+                <svg width="36" height="36" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 8L8 14V24H12V18H20V24H24V14L16 8Z" fill="white"/>
+                </svg>
+            </div>
+            <h1>TokoKu</h1>
+            <p>Sistem Manajemen Toko</p>
+        </div>
+
+        <div class="login-body">
+            <div class="alert error" id="login-alert">
+                <strong>Login Gagal!</strong> Username atau password salah.
+            </div>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <div class="input-wrapper">
+                        <svg class="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10 10C12.2091 10 14 8.20914 14 6C14 3.79086 12.2091 2 10 2C7.79086 2 6 3.79086 6 6C6 8.20914 7.79086 10 10 10Z" fill="currentColor"/>
+                            <path d="M3 18C3 14.134 6.13401 11 10 11C13.866 11 17 14.134 17 18H3Z" fill="currentColor"/>
+                        </svg>
+                        <input type="text" id="username" class="input" placeholder="Masukkan username" required autofocus>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-wrapper">
+                        <svg class="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 9V6C5 3.23858 7.23858 1 10 1C12.7614 1 15 3.23858 15 6V9M3 9H17C17.5523 9 18 9.44772 18 10V18C18 18.5523 17.5523 19 17 19H3C2.44772 19 2 18.5523 2 18V10C2 9.44772 2.44772 9 3 9Z" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        <input type="password" id="password" class="input" placeholder="Masukkan password" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn" id="login-btn">
+                    Masuk
+                </button>
+            </form>
+
+            <div class="divider">
+                <span>User Default</span>
+            </div>
+
+            <div class="default-users">
+                <h3>Akun untuk Testing:</h3>
+                <div class="user-item">
+                    <span><strong>Admin:</strong></span>
+                    <code>admin / admin123</code>
+                </div>
+                <div class="user-item">
+                    <span><strong>Kasir:</strong></span>
+                    <code>kasir / kasir123</code>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        // Initialize database and seed users
+        async function initLogin() {
+            try {
+                await initDB();
+                await seedDefaultUsers();
+            } catch (error) {
+                console.error('Error initializing login:', error);
+            }
+        }
+
+        // Handle login form submit
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('login-btn');
+            const alert = document.getElementById('login-alert');
+            
+            // Disable button
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Memproses...';
+            alert.classList.remove('show');
+            
+            try {
+                const user = await login(username, password);
+                
+                if (user) {
+                    // Redirect to main app
+                    window.location.href = 'index.html';
+                } else {
+                    // Show error
+                    alert.classList.add('show');
+                    document.getElementById('username').classList.add('error');
+                    document.getElementById('password').classList.add('error');
+                    
+                    setTimeout(() => {
+                        document.getElementById('username').classList.remove('error');
+                        document.getElementById('password').classList.remove('error');
+                    }, 3000);
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert.classList.add('show');
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Masuk';
+            }
+        });
+
+        // Clear error on input
+        document.getElementById('username').addEventListener('input', () => {
+            document.getElementById('login-alert').classList.remove('show');
+        });
+        
+        document.getElementById('password').addEventListener('input', () => {
+            document.getElementById('login-alert').classList.remove('show');
+        });
+
+        // Initialize on load
+        initLogin();
+    </script>
+</body>
+</html>

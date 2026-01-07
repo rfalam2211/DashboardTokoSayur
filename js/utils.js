@@ -44,6 +44,18 @@ function generateId() {
 }
 
 /**
+ * Escape HTML to prevent XSS attacks
+ * @param {string} text - Text to escape
+ * @returns {string} Escaped HTML string
+ */
+function escapeHtml(text) {
+    if (text === undefined || text === null) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+/**
  * Show toast notification
  * @param {string} message - Message to display
  * @param {string} type - Type of toast (success, error, warning, info)

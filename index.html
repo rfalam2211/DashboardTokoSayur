@@ -21,6 +21,20 @@
                 </svg>
                 <h1>TokoKu</h1>
             </div>
+            <div class="user-info" id="user-info">
+                <div class="user-avatar">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M10 10C12.2091 10 14 8.20914 14 6C14 3.79086 12.2091 2 10 2C7.79086 2 6 3.79086 6 6C6 8.20914 7.79086 10 10 10Z"
+                            fill="currentColor" />
+                        <path d="M3 18C3 14.134 6.13401 11 10 11C13.866 11 17 14.134 17 18H3Z" fill="currentColor" />
+                    </svg>
+                </div>
+                <div class="user-details">
+                    <p class="user-name" id="user-name">Loading...</p>
+                    <p class="user-role" id="user-role">-</p>
+                </div>
+            </div>
         </div>
         
         <nav class="sidebar-nav">
@@ -69,9 +83,34 @@
                 </svg>
                 <span>Laporan</span>
             </a>
+            <a href="#users" class="nav-item" data-page="users">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 6C9 7.65685 7.65685 9 6 9C4.34315 9 3 7.65685 3 6C3 4.34315 4.34315 3 6 3C7.65685 3 9 4.34315 9 6Z"
+                        fill="currentColor" />
+                    <path
+                        d="M17 6C17 7.65685 15.6569 9 14 9C12.3431 9 11 7.65685 11 6C11 4.34315 12.3431 3 14 3C15.6569 3 17 4.34315 17 6Z"
+                        fill="currentColor" />
+                    <path
+                        d="M12.9291 10.9286C11.4438 9.97855 9.59924 9.99926 8.13176 10.9821C6.66428 11.965 5.81575 13.7065 6 15.4999H14C14.1843 13.7065 13.3357 11.965 11.8682 10.9821C11.5587 10.7839 11.2415 10.6354 10.9291 10.5357"
+                        fill="currentColor" />
+                    <path d="M2 16C2 13.7909 3.79086 12 6 12C8.20914 12 10 13.7909 10 16H2Z" fill="currentColor" />
+                </svg>
+                <span>Pengguna</span>
+            </a>
         </nav>
         
         <div class="sidebar-footer">
+            <button class="btn-logout" id="logout-btn">
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M3 3C2.44772 3 2 3.44772 2 4V16C2 16.5523 2.44772 17 3 17H10C10.5523 17 11 16.5523 11 16V14H9V15H4V5H9V6H11V4C11 3.44772 10.5523 3 10 3H3Z"
+                        fill="currentColor" />
+                    <path
+                        d="M16.293 10.707L14.586 12.414L15.293 13.121L18.414 10L15.293 6.879L14.586 7.586L16.293 9.293H7V10.707H16.293Z"
+                        fill="currentColor" />
+                </svg>
+                <span>Logout</span>
+            </button>
             <div class="offline-indicator">
                 <div class="status-dot"></div>
                 <span>Mode Offline</span>
@@ -392,7 +431,89 @@
                 </div>
             </div>
         </section>
+<!-- Users Page -->
+<section id="users-page" class="page">
+    <header class="page-header">
+        <div>
+            <h2>Manajemen Pengguna</h2>
+            <p class="page-subtitle">Kelola pengguna dan hak akses sistem</p>
+        </div>
+        <button class="btn btn-primary" id="add-user-btn">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+            Tambah Pengguna
+        </button>
+    </header>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>Daftar Pengguna</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-container">
+                <table id="users-table">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Dibuat</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-tbody">
+                        <tr class="empty-row">
+                            <td colspan="5">
+                                <div class="empty-state">
+                                    <p>Memuat data pengguna...</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
     </main>
+
+    <!-- Modal for User Form -->
+    <div id="user-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="user-modal-title">Tambah Pengguna</h3>
+                <button class="modal-close" id="close-user-modal">&times;</button>
+            </div>
+            <form id="user-form">
+                <div class="form-group">
+                    <label for="user-name-input">Nama Lengkap *</label>
+                    <input type="text" id="user-name-input" class="input" required>
+                </div>
+                <div class="form-group">
+                    <label for="user-username">Username *</label>
+                    <input type="text" id="user-username" class="input" required>
+                </div>
+                <div class="form-group">
+                    <label for="user-password">Password *</label>
+                    <input type="password" id="user-password" class="input" required>
+                </div>
+                <div class="form-group">
+                    <label for="user-role">Role *</label>
+                    <select id="user-role" class="select-input" required>
+                        <option value="">Pilih Role</option>
+                        <option value="admin">Admin</option>
+                        <option value="kasir">Kasir</option>
+                    </select>
+                </div>
+                <input type="hidden" id="user-id">
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-text" id="cancel-user-btn">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Modal for Product Form -->
     <div id="product-modal" class="modal">
@@ -458,11 +579,13 @@
     <!-- Scripts -->
     <script src="js/utils.js"></script>
     <script src="js/database.js"></script>
+    <script src="js/auth.js"></script>
     <script src="js/dashboard.js"></script>
     <script src="js/products.js"></script>
     <script src="js/pos.js"></script>
     <script src="js/transactions.js"></script>
     <script src="js/reports.js"></script>
+    <script src="js/users.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
