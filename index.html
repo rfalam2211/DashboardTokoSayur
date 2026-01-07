@@ -231,21 +231,35 @@
             </header>
             
             <div class="card">
-                <div class="card-header">
-                    <div class="search-box">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <div class="card-header products-header">
+                    <div class="search-box-enhanced">
+                        <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
                             <path d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z" stroke="currentColor" stroke-width="2"/>
                             <path d="M19 19L14.65 14.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
-                        <input type="text" id="search-products" placeholder="Cari produk...">
+                        <input type="text" id="search-products" placeholder="Cari produk berdasarkan nama...">
+                        <button class="clear-search" id="clear-search-btn" style="display: none;">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                        </button>
                     </div>
-                    <select id="filter-category" class="select-input">
-                        <option value="">Semua Kategori</option>
-                        <option value="makanan">Makanan</option>
-                        <option value="minuman">Minuman</option>
-                        <option value="snack">Snack</option>
-                        <option value="lainnya">Lainnya</option>
-                    </select>
+                    <div class="filter-group-enhanced">
+                        <label for="filter-category">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M2 4H14M4 8H12M6 12H10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                            Kategori
+                        </label>
+                        <select id="filter-category" class="select-input-enhanced">
+                            <option value="">Semua Kategori</option>
+                            <option value="makanan">🍱 Makanan</option>
+                            <option value="minuman">🥤 Minuman</option>
+                            <option value="snack">🍿 Snack</option>
+                            <option value="lainnya">📦 Lainnya</option>
+                            </select>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="table-container">
@@ -572,6 +586,34 @@
             </div>
         </div>
     </div>
+
+<!-- Logout Confirmation Modal -->
+<div id="logout-modal" class="modal">
+    <div class="modal-content modal-small">
+        <div class="modal-header">
+            <h3>Konfirmasi Logout</h3>
+            <button class="modal-close" id="close-logout-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="logout-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M16 17L21 12L16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+            </div>
+            <p class="logout-message">Apakah Anda yakin ingin keluar dari sistem?</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="cancel-logout-btn">Batal</button>
+            <button type="button" class="btn btn-danger" id="confirm-logout-btn">Ya, Logout</button>
+        </div>
+    </div>
+</div>
 
     <!-- Toast Notification -->
     <div id="toast" class="toast"></div>

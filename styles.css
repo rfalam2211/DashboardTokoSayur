@@ -553,6 +553,152 @@ body {
     padding-left: 2.75rem;
 }
 
+/* Enhanced Search Box */
+.products-header {
+    display: flex;
+    gap: var(--spacing-lg);
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-box-enhanced {
+    position: relative;
+    flex: 1;
+    min-width: 300px;
+}
+
+.search-box-enhanced .search-icon {
+    position: absolute;
+    left: var(--spacing-md);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-gray-400);
+    transition: all var(--transition-base);
+    z-index: 1;
+}
+
+.search-box-enhanced input {
+    width: 100%;
+    padding: var(--spacing-md) 3rem var(--spacing-md) 2.75rem;
+    border: 2px solid var(--color-gray-200);
+    border-radius: var(--radius-lg);
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: all var(--transition-base);
+    background: var(--color-white);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.search-box-enhanced input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1), 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+}
+
+.search-box-enhanced input:focus+.search-icon {
+    color: var(--color-primary);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.search-box-enhanced input::placeholder {
+    color: var(--color-gray-400);
+    font-style: italic;
+}
+
+.clear-search {
+    position: absolute;
+    right: var(--spacing-md);
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--color-gray-200);
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    color: var(--color-gray-600);
+    padding: 0;
+}
+
+.clear-search:hover {
+    background: var(--color-danger);
+    color: var(--color-white);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.clear-search svg {
+    width: 12px;
+    height: 12px;
+}
+
+/* Enhanced Filter Group */
+.filter-group-enhanced {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    min-width: 200px;
+}
+
+.filter-group-enhanced label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.filter-group-enhanced label svg {
+    color: var(--color-primary);
+}
+
+.select-input-enhanced {
+    width: 100%;
+    padding: var(--spacing-md);
+    border: 2px solid var(--color-gray-200);
+    border-radius: var(--radius-lg);
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: all var(--transition-base);
+    background: var(--color-white);
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.select-input-enhanced:hover {
+    border-color: var(--color-gray-300);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.select-input-enhanced:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1), 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Search Animation */
+@keyframes searchPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+    }
+}
+
+.search-box-enhanced input:focus {
+    animation: searchPulse 2s infinite;
+}
 /* Tables */
 .table-container {
     overflow-x: auto;
@@ -1052,6 +1198,34 @@ tbody tr:hover {
     }
 }
 
+/* Logout Modal Specific Styles */
+.modal-small {
+    max-width: 400px;
+}
+
+.modal-body {
+    padding: var(--spacing-xl);
+    text-align: center;
+}
+
+.logout-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto var(--spacing-lg);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-danger);
+}
+
+.logout-message {
+    font-size: 1rem;
+    color: var(--color-gray-700);
+    line-height: 1.6;
+    margin: 0;
+}
 /* Scrollbar Styling */
 ::-webkit-scrollbar {
     width: 8px;

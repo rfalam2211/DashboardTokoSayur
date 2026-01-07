@@ -62,12 +62,47 @@ function loadUserInfo() {
  * Setup logout button
  */
 function setupLogout() {
-    document.getElementById('logout-btn').addEventListener('click', () => {
-        if (confirm('Apakah Anda yakin ingin logout?')) {
+    const logoutBtn = document.getElementById('logout-btn');
+    const logoutModal = document.getElementById('logout-modal');
+    const confirmLogoutBtn = document.getElementById('confirm-logout-btn');
+    const cancelLogoutBtn = document.getElementById('cancel-logout-btn');
+    const closeLogoutModal = document.getElementById('close-logout-modal');
+
+    if (logoutBtn) {
+        // Show modal when logout button is clicked
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            logoutModal.classList.add('active');
+        });
+        console.log('Logout button event listener attached');
+    } else {
+        console.error('Logout button not found');
+    }
+
+    // Confirm logout
+    if (confirmLogoutBtn) {
+        confirmLogoutBtn.addEventListener('click', () => {
+            logoutModal.classList.remove('active');
             logout();
-        }
-    });
+        });
+    }
+
+    // Cancel logout - close modal
+    if (cancelLogoutBtn) {
+        cancelLogoutBtn.addEventListener('click', () => {
+            logoutModal.classList.remove('active');
+        });
+    }
+
+    // Close modal with X button
+    if (closeLogoutModal) {
+        closeLogoutModal.addEventListener('click', () => {
+            logoutModal.classList.remove('active');
+        });
+    }
 }
+
 
 /**
  * Filter navigation items based on user role
