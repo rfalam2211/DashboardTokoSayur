@@ -1264,3 +1264,452 @@ tbody tr:hover {
         border: 1px solid var(--color-gray-300);
     }
 }
+
+/* ===== MOBILE RESPONSIVE STYLES ===== */
+
+/* Hamburger Menu */
+.hamburger-menu {
+    display: none;
+    position: fixed;
+    top: var(--spacing-md);
+    left: var(--spacing-md);
+    z-index: 1001;
+    width: 44px;
+    height: 44px;
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    align-items: center;
+    justify-content: center;
+}
+
+.hamburger-menu:hover {
+    background: var(--color-gray-50);
+    border-color: var(--color-primary);
+}
+
+.hamburger-menu svg {
+    color: var(--color-gray-700);
+}
+
+/* PWA Install Banner */
+.pwa-install-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--color-white);
+    border-top: 1px solid var(--color-gray-200);
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    animation: slideUp var(--transition-base);
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+.install-banner-content {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.install-banner-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-white);
+    flex-shrink: 0;
+}
+
+.install-banner-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.install-banner-text strong {
+    display: block;
+    font-size: 0.95rem;
+    color: var(--color-gray-900);
+    margin-bottom: 0.125rem;
+}
+
+.install-banner-text p {
+    font-size: 0.8rem;
+    color: var(--color-gray-600);
+    margin: 0;
+}
+
+.btn-sm {
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: 0.875rem;
+}
+
+/* Pull to Refresh Indicator */
+.pull-to-refresh-indicator {
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-md);
+    background: var(--color-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    transition: all var(--transition-base);
+    z-index: 10;
+}
+
+.pull-to-refresh-indicator.refreshing .refresh-icon {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.pull-to-refresh-indicator span {
+    font-size: 0.75rem;
+    color: var(--color-gray-600);
+    white-space: nowrap;
+}
+
+.refresh-icon {
+    color: var(--color-primary);
+}
+
+/* Mobile Media Queries */
+@media (max-width: 768px) {
+
+    /* Show hamburger menu */
+    .hamburger-menu {
+        display: flex;
+    }
+
+    /* Hide sidebar by default on mobile */
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform var(--transition-base);
+    }
+
+    .sidebar.mobile-open {
+        transform: translateX(0);
+        box-shadow: var(--shadow-xl);
+    }
+
+    /* Overlay when sidebar is open */
+    body.sidebar-open::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 99;
+        animation: fadeIn var(--transition-fast);
+    }
+
+    /* Main content takes full width */
+    .main-content {
+        margin-left: 0;
+        padding: calc(var(--spacing-xl) + 44px) var(--spacing-md) var(--spacing-md);
+    }
+
+    /* Page header adjustments */
+    .page-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-md);
+        margin-top: var(--spacing-md);
+    }
+
+    .page-header h2 {
+        font-size: 1.5rem;
+    }
+
+    /* Stats grid - single column */
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Dashboard grid - single column */
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Card header - stack items */
+    .card-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .products-header {
+        flex-direction: column;
+    }
+
+    .search-box-enhanced {
+        min-width: 100%;
+    }
+
+    /* Tables - convert to cards on mobile */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+        min-width: 600px;
+    }
+
+    /* POS Grid - stack on mobile */
+    .pos-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pos-cart {
+        position: sticky;
+        bottom: 0;
+        max-height: 50vh;
+    }
+
+    /* Products grid - 2 columns on mobile */
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-sm);
+    }
+
+    .product-item {
+        padding: var(--spacing-sm);
+    }
+
+    .product-item h4 {
+        font-size: 0.875rem;
+    }
+
+    .product-item .price {
+        font-size: 0.95rem;
+    }
+
+    /* Touch-friendly buttons */
+    .btn {
+        min-height: 44px;
+        padding: var(--spacing-md) var(--spacing-lg);
+    }
+
+    .btn-icon {
+        width: 44px;
+        height: 44px;
+    }
+
+    /* Modal adjustments */
+    .modal-content {
+        width: 95%;
+        max-width: 95%;
+        margin: var(--spacing-md);
+    }
+
+    .modal-small {
+        width: 90%;
+    }
+
+    /* Form adjustments */
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    /* Filter group */
+    .filter-group {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .filter-group label {
+        width: 100%;
+    }
+
+    .filter-group input,
+    .filter-group select {
+        width: 100%;
+    }
+
+    /* Cart items - larger touch targets */
+    .cart-item {
+        padding: var(--spacing-md);
+    }
+
+    .qty-btn {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    /* Report summary - stack on mobile */
+    .report-summary {
+        grid-template-columns: 1fr;
+    }
+
+    /* Reduce spacing on mobile */
+    :root {
+        --spacing-xl: 1.5rem;
+        --spacing-2xl: 2rem;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+    .page-header h2 {
+        font-size: 1.25rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+    }
+
+    .products-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Single column for all grids */
+    .stats-grid,
+    .dashboard-grid,
+    .report-summary {
+        grid-template-columns: 1fr;
+    }
+
+    /* Smaller modals */
+    .modal-content {
+        width: 100%;
+        max-height: 90vh;
+        margin: 0;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        animation: slideUp var(--transition-base);
+    }
+
+    /* Adjust PWA install banner for small screens */
+    .install-banner-content {
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+
+    .install-banner-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .install-banner-text strong {
+        font-size: 0.875rem;
+    }
+
+    .install-banner-text p {
+        font-size: 0.75rem;
+    }
+}
+
+/* Landscape mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .main-content {
+        padding-top: var(--spacing-lg);
+    }
+
+    .modal-content {
+        max-height: 95vh;
+        overflow-y: auto;
+    }
+}
+
+/* Tablet adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .sidebar {
+        width: 220px;
+    }
+
+    :root {
+        --sidebar-width: 220px;
+    }
+
+    .main-content {
+        margin-left: 220px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* PWA-specific styles */
+.pwa-installed .pwa-install-banner {
+    display: none;
+}
+
+/* Safe area insets for notched devices */
+@supports (padding: env(safe-area-inset-top)) {
+    .sidebar {
+        padding-top: env(safe-area-inset-top);
+    }
+
+    .main-content {
+        padding-top: calc(var(--spacing-xl) + env(safe-area-inset-top));
+        padding-bottom: calc(var(--spacing-xl) + env(safe-area-inset-bottom));
+    }
+
+    .pwa-install-banner {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .btn-primary {
+        border: 2px solid var(--color-primary-dark);
+    }
+
+    .card {
+        border: 2px solid var(--color-gray-300);
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

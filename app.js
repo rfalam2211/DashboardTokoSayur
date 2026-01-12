@@ -9,6 +9,16 @@ let currentUser = null;
  */
 async function initApp() {
     try {
+        // Register service worker for PWA
+        if ('serviceWorker' in navigator) {
+            try {
+                const registration = await navigator.serviceWorker.register('/service-worker.js');
+                console.log('Service Worker registered:', registration);
+            } catch (error) {
+                console.error('Service Worker registration failed:', error);
+            }
+        }
+
         // Check authentication
         if (!checkAuth()) {
             return;

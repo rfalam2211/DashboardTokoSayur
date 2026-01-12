@@ -1,7 +1,7 @@
 // IndexedDB Database Management
 
 const DB_NAME = 'TokoKuDB';
-const DB_VERSION = 2;
+const DB_VERSION = 3; // Updated for new features
 
 let db = null;
 
@@ -26,12 +26,21 @@ function initDB() {
 
         request.onupgradeneeded = (e) => {
             db = e.target.result;
+            const oldVersion = e.oldVersion;
 
             // Products store
             if (!db.objectStoreNames.contains('products')) {
                 const productsStore = db.createObjectStore('products', { keyPath: 'id' });
                 productsStore.createIndex('name', 'name', { unique: false });
                 productsStore.createIndex('category', 'category', { unique: false });
+                productsStore.createIndex('barcode', 'barcode', { unique: false });
+            } else if (oldVersion < 3) {
+                // Add barcode index to existing products store
+                const transaction = e.target.transaction;
+                const productsStore = transaction.objectStore('products');
+                if (!productsStore.indexNames.contains('barcode')) {
+                    productsStore.createIndex('barcode', 'barcode', { unique: false });
+                }
             }
 
             // Transactions store
@@ -55,7 +64,32 @@ function initDB() {
                 usersStore.createIndex('role', 'role', { unique: false });
             }
 
-            console.log('Database setup complete');
+            // Discounts store (NEW)
+            if (!db.objectStoreNames.contains('discounts')) {
+                const discountsStore = db.createObjectStore('discounts', { keyPath: 'id' });
+                discountsStore.createIndex('active', 'active', { unique: false });
+                discountsStore.createIndex('type', 'type', { unique: false });
+                discountsStore.createIndex('validFrom', 'validFrom', { unique: false });
+                discountsStore.createIndex('validTo', 'validTo', { unique: false });
+            }
+
+            // Customers store (NEW)
+            if (!db.objectStoreNames.contains('customers')) {
+                const customersStore = db.createObjectStore('customers', { keyPath: 'id' });
+                customersStore.createIndex('name', 'name', { unique: false });
+                customersStore.createIndex('phone', 'phone', { unique: false });
+            }
+
+            // Debts store (NEW)
+            if (!db.objectStoreNames.contains('debts')) {
+                const debtsStore = db.createObjectStore('debts', { keyPath: 'id' });
+                debtsStore.createIndex('customerId', 'customerId', { unique: false });
+                debtsStore.createIndex('status', 'status', { unique: false });
+                debtsStore.createIndex('dueDate', 'dueDate', { unique: false });
+                debtsStore.createIndex('createdAt', 'createdAt', { unique: false });
+            }
+
+            console.log('Database setup complete - Version', DB_VERSION);
         };
     });
 }
@@ -485,3 +519,461 @@ async function seedDefaultUsers() {
         console.error('Error seeding default users:', error);
     }
 }
+
+// ===== DISCOUNTS CRUD =====
+
+/**
+ * Add a new discount
+ * @param {Object} discount - Discount object
+ * @returns {Promise} Promise that resolves with the discount ID
+ */
+function addDiscount(discount) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['discounts'], 'readwrite');
+        const store = transaction.objectStore('discounts');
+
+        const discountData = {
+            id: generateId(),
+            name: discount.name,
+            type: discount.type, // 'percentage' or 'fixed'
+            value: parseFloat(discount.value),
+            applicableTo: discount.applicableTo || 'all', // 'all', 'product', 'category'
+            productIds: discount.productIds || [],
+            categoryIds: discount.categoryIds || [],
+            validFrom: discount.validFrom || new Date().toISOString(),
+            validTo: discount.validTo || null,
+            active: discount.active !== false,
+            createdAt: new Date().toISOString()
+        };
+
+        const request = store.add(discountData);
+
+        request.onsuccess = () => resolve(discountData.id);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+/**
+ * Get all discounts
+ * @returns {Promise} Promise that resolves with array of discounts
+ */
+function getAllDiscounts() {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['discounts'], 'readonly');
+        const store = transaction.objectStore('discounts');
+        const request = store.getAll();
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+/**
+ * Get active discounts
+ * @returns {Promise} Promise that resolves with array of active discounts
+ */
+function getActiveDiscounts() {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['discounts'], 'readonly');
+        const store = transaction.objectStore('discounts');
+        const request = store.getAll();
+
+        request.onsuccess = () => {
+            const now = new Date();
+            const activeDiscounts = request.result.filter(d => {
+                if (!d.active) return false;
+                if (d.validFrom && new Date(d.validFrom) > now) return false;
+                if (d.validTo && new Date(d.validTo) < now) return false;
+                return true;
+            });
+            resolve(activeDiscounts);
+        };
+        request.onerror = () => reject(request.error);
+    });
+}
+
+/**
+ * Update discount
+ * @param {string} id - Discount ID
+ * @param {Object} updates - Object with fields to update
+ * @returns {Promise} Promise that resolves when update is complete
+ */
+function updateDiscount(id, updates) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['discounts'], 'readwrite');
+        const store = transaction.objectStore('discounts');
+
+        const getRequest = store.get(id);
+
+        getRequest.onsuccess = () => {
+            const discount = getRequest.result;
+
+            if (!discount) {
+                reject(new Error('Discount not found'));
+                return;
+            }
+
+            Object.keys(updates).forEach(key => {
+                if (key === 'value') {
+                    discount[key] = parseFloat(updates[key]);
+                } else {
+                    discount[key] = updates[key];
+                }
+            });
+
+            discount.updatedAt = new Date().toISOString();
+
+            const updateRequest = store.put(discount);
+            updateRequest.onsuccess = () => resolve();
+            updateRequest.onerror = () => reject(updateRequest.error);
+        };
+
+        getRequest.onerror = () => reject(getRequest.error);
+    });
+}
+
+/**
+ * Delete discount
+ * @param {string} id - Discount ID
+ * @returns {Promise} Promise that resolves when deletion is complete
+ */
+function deleteDiscount(id) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['discounts'], 'readwrite');
+        const store = transaction.objectStore('discounts');
+        const request = store.delete(id);
+
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+    });
+}
+
+// ===== CUSTOMERS CRUD =====
+
+/**
+ * Add a new customer
+ * @param {Object} customer - Customer object
+ * @returns {Promise} Promise that resolves with the customer ID
+ */
+function addCustomer(customer) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['customers'], 'readwrite');
+        const store = transaction.objectStore('customers');
+
+        const customerData = {
+            id: generateId(),
+            name: customer.name,
+            phone: customer.phone || '',
+            address: customer.address || '',
+            totalDebt: 0,
+            createdAt: new Date().toISOString()
+        };
+
+        const request = store.add(customerData);
+
+        request.onsuccess = () => resolve(customerData.id);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+/**
+ * Get all customers
+ * @returns {Promise} Promise that resolves with array of customers
+ */
+function getAllCustomers() {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['customers'], 'readonly');
+        const store = transaction.objectStore('customers');
+        const request = store.getAll();
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+/**
+ * Get customer by ID
+ * @param {string} id - Customer ID
+ * @returns {Promise} Promise that resolves with customer object
+ */
+function getCustomer(id) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['customers'], 'readonly');
+        const store = transaction.objectStore('customers');
+        const request = store.get(id);
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+/**
+ * Update customer
+ * @param {string} id - Customer ID
+ * @param {Object} updates - Object with fields to update
+ * @returns {Promise} Promise that resolves when update is complete
+ */
+function updateCustomer(id, updates) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['customers'], 'readwrite');
+        const store = transaction.objectStore('customers');
+
+        const getRequest = store.get(id);
+
+        getRequest.onsuccess = () => {
+            const customer = getRequest.result;
+
+            if (!customer) {
+                reject(new Error('Customer not found'));
+                return;
+            }
+
+            Object.keys(updates).forEach(key => {
+                customer[key] = updates[key];
+            });
+
+            customer.updatedAt = new Date().toISOString();
+
+            const updateRequest = store.put(customer);
+            updateRequest.onsuccess = () => resolve();
+            updateRequest.onerror = () => reject(updateRequest.error);
+        };
+
+        getRequest.onerror = () => reject(getRequest.error);
+    });
+}
+
+/**
+ * Delete customer
+ * @param {string} id - Customer ID
+ * @returns {Promise} Promise that resolves when deletion is complete
+ */
+function deleteCustomer(id) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['customers'], 'readwrite');
+        const store = transaction.objectStore('customers');
+        const request = store.delete(id);
+
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+    });
+}
+
+// ===== DEBTS CRUD =====
+
+/**
+ * Add a new debt
+ * @param {Object} debt - Debt object
+ * @returns {Promise} Promise that resolves with the debt ID
+ */
+function addDebt(debt) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['debts'], 'readwrite');
+        const store = transaction.objectStore('debts');
+
+        const debtData = {
+            id: generateId(),
+            customerId: debt.customerId,
+            customerName: debt.customerName,
+            transactionId: debt.transactionId || null,
+            amount: parseFloat(debt.amount),
+            paid: 0,
+            remaining: parseFloat(debt.amount),
+            dueDate: debt.dueDate || null,
+            status: 'pending',
+            payments: [],
+            notes: debt.notes || '',
+            createdAt: new Date().toISOString()
+        };
+
+        const request = store.add(debtData);
+
+        request.onsuccess = () => resolve(debtData.id);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+/**
+ * Get all debts
+ * @param {string} filter - Optional filter: 'pending', 'partial', 'paid', 'overdue'
+ * @returns {Promise} Promise that resolves with array of debts
+ */
+function getAllDebts(filter = null) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['debts'], 'readonly');
+        const store = transaction.objectStore('debts');
+        const request = store.getAll();
+
+        request.onsuccess = () => {
+            let debts = request.result;
+
+            if (filter) {
+                debts = debts.filter(d => d.status === filter);
+            }
+
+            // Sort by created date descending
+            debts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            resolve(debts);
+        };
+        request.onerror = () => reject(request.error);
+    });
+}
+
+/**
+ * Get debts by customer ID
+ * @param {string} customerId - Customer ID
+ * @returns {Promise} Promise that resolves with array of debts
+ */
+function getDebtsByCustomer(customerId) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['debts'], 'readonly');
+        const store = transaction.objectStore('debts');
+        const index = store.index('customerId');
+        const request = index.getAll(customerId);
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+/**
+ * Get debt by ID
+ * @param {string} id - Debt ID
+ * @returns {Promise} Promise that resolves with debt object
+ */
+function getDebt(id) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['debts'], 'readonly');
+        const store = transaction.objectStore('debts');
+        const request = store.get(id);
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+/**
+ * Record payment for a debt
+ * @param {string} debtId - Debt ID
+ * @param {Object} payment - Payment object {amount, method, date}
+ * @returns {Promise} Promise that resolves when payment is recorded
+ */
+function recordDebtPayment(debtId, payment) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['debts'], 'readwrite');
+        const store = transaction.objectStore('debts');
+
+        const getRequest = store.get(debtId);
+
+        getRequest.onsuccess = () => {
+            const debt = getRequest.result;
+
+            if (!debt) {
+                reject(new Error('Debt not found'));
+                return;
+            }
+
+            const paymentAmount = parseFloat(payment.amount);
+            debt.paid += paymentAmount;
+            debt.remaining = debt.amount - debt.paid;
+
+            // Update status
+            if (debt.remaining <= 0) {
+                debt.status = 'paid';
+                debt.remaining = 0;
+            } else if (debt.paid > 0) {
+                debt.status = 'partial';
+            }
+
+            // Add payment record
+            debt.payments.push({
+                date: payment.date || new Date().toISOString(),
+                amount: paymentAmount,
+                method: payment.method || 'tunai'
+            });
+
+            debt.updatedAt = new Date().toISOString();
+
+            const updateRequest = store.put(debt);
+            updateRequest.onsuccess = () => resolve(debt);
+            updateRequest.onerror = () => reject(updateRequest.error);
+        };
+
+        getRequest.onerror = () => reject(getRequest.error);
+    });
+}
+
+/**
+ * Update debt status (check for overdue)
+ * @param {string} id - Debt ID
+ * @returns {Promise} Promise that resolves when update is complete
+ */
+function updateDebtStatus(id) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['debts'], 'readwrite');
+        const store = transaction.objectStore('debts');
+
+        const getRequest = store.get(id);
+
+        getRequest.onsuccess = () => {
+            const debt = getRequest.result;
+
+            if (!debt) {
+                reject(new Error('Debt not found'));
+                return;
+            }
+
+            // Check if overdue
+            if (debt.status !== 'paid' && debt.dueDate) {
+                const now = new Date();
+                const dueDate = new Date(debt.dueDate);
+                if (dueDate < now) {
+                    debt.status = 'overdue';
+                }
+            }
+
+            const updateRequest = store.put(debt);
+            updateRequest.onsuccess = () => resolve();
+            updateRequest.onerror = () => reject(updateRequest.error);
+        };
+
+        getRequest.onerror = () => reject(getRequest.error);
+    });
+}
+
+/**
+ * Delete debt
+ * @param {string} id - Debt ID
+ * @returns {Promise} Promise that resolves when deletion is complete
+ */
+function deleteDebt(id) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['debts'], 'readwrite');
+        const store = transaction.objectStore('debts');
+        const request = store.delete(id);
+
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+    });
+}
+
+// ===== BARCODE FUNCTIONS =====
+
+/**
+ * Get product by barcode
+ * @param {string} barcode - Barcode string
+ * @returns {Promise} Promise that resolves with product object
+ */
+function getProductByBarcode(barcode) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['products'], 'readonly');
+        const store = transaction.objectStore('products');
+        const index = store.index('barcode');
+        const request = index.get(barcode);
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
