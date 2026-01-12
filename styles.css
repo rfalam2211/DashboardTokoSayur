@@ -1713,3 +1713,187 @@ tbody tr:hover {
         transition-duration: 0.01ms !important;
     }
 }
+/* ===== BARCODE SCANNER STYLES ===== */
+
+/* Barcode Input Group */
+.barcode-input-group {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+}
+
+.barcode-input-group .input {
+    flex: 1;
+}
+
+.barcode-input-group .btn-icon {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+}
+
+/* Barcode Display in Product Table */
+.barcode-display {
+    color: var(--color-gray-600);
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+}
+
+/* Scanner Modal */
+.modal-scanner {
+    max-width: 600px;
+}
+
+.scanner-container {
+    width: 100%;
+    min-height: 300px;
+    background: var(--color-gray-900);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    position: relative;
+    margin-bottom: var(--spacing-lg);
+}
+
+.scanner-container video {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.scanner-instructions {
+    text-align: center;
+    padding: var(--spacing-md);
+    background: var(--color-gray-50);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.scanner-instructions p {
+    margin: 0;
+    color: var(--color-gray-700);
+}
+
+.scanner-tip {
+    font-size: 0.875rem;
+    color: var(--color-gray-500);
+    margin-top: var(--spacing-xs) !important;
+}
+
+.manual-entry {
+    border-top: 1px solid var(--color-gray-200);
+    padding-top: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+}
+
+.manual-entry p {
+    margin-bottom: var(--spacing-sm);
+    color: var(--color-gray-600);
+    font-size: 0.9rem;
+}
+
+.manual-entry .form-group {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: 0;
+}
+
+.manual-entry .input {
+    flex: 1;
+}
+
+/* Scanner Overlay (for html5-qrcode) */
+#barcode-scanner-container {
+    position: relative;
+}
+
+#barcode-scanner-container__scan_region {
+    border: 2px solid var(--color-primary) !important;
+}
+
+#barcode-scanner-container__dashboard_section {
+    display: none !important;
+}
+
+/* Scanning Animation */
+@keyframes scanLine {
+    0% {
+        top: 0;
+    }
+
+    50% {
+        top: 100%;
+    }
+
+    100% {
+        top: 0;
+    }
+}
+
+.scanner-line {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: var(--color-primary);
+    box-shadow: 0 0 10px var(--color-primary);
+    animation: scanLine 2s linear infinite;
+    z-index: 10;
+}
+
+/* Mobile Scanner Adjustments */
+@media (max-width: 768px) {
+    .modal-scanner {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
+
+    .scanner-container {
+        min-height: 250px;
+    }
+
+    .barcode-input-group {
+        flex-direction: column;
+    }
+
+    .barcode-input-group .input {
+        width: 100%;
+    }
+
+    .barcode-input-group .btn-icon {
+        width: 100%;
+    }
+}
+
+/* ===== FORM ELEMENTS ===== */
+
+/* Checkbox Label */
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--color-primary);
+}
+
+.checkbox-label span {
+    font-size: 0.95rem;
+    color: var(--color-gray-700);
+}
+
+/* Form Hints */
+.form-hint {
+    display: block;
+    margin-top: var(--spacing-xs);
+    font-size: 0.8rem;
+    color: var(--color-gray-500);
+    font-style: italic;
+}

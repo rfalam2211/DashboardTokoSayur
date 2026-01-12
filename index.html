@@ -16,6 +16,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <!-- Barcode Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
     <!-- Sidebar Navigation -->
@@ -89,6 +91,14 @@
                     <path d="M15 3C14.4477 3 14 3.44772 14 4V16C14 16.5523 14.4477 17 15 17H17C17.5523 17 18 16.5523 18 16V4C18 3.44772 17.5523 3 17 3H15Z" fill="currentColor"/>
                 </svg>
                 <span>Laporan</span>
+            </a>
+            <a href="#discounts" class="nav-item" data-page="discounts">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 2L2 7L10 12L18 7L10 2Z" fill="currentColor" />
+                    <path d="M2 12L10 17L18 12" stroke="currentColor" stroke-width="2" />
+                    <circle cx="10" cy="7" r="2" fill="white" />
+                </svg>
+                <span>Diskon</span>
             </a>
             <a href="#users" class="nav-item" data-page="users">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -536,6 +546,130 @@
         </div>
     </div>
 
+    <!-- Discounts Page -->
+    <section id="discounts-page" class="page">
+        <div class="page-header">
+            <div>
+                <h2>Manajemen Diskon</h2>
+                <p class="page-subtitle">Kelola diskon dan promosi produk</p>
+            </div>
+            <button class="btn btn-primary" id="add-discount-btn">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 5V15M5 10H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                Tambah Diskon
+            </button>
+        </div>
+    
+        <div class="card">
+            <div class="card-header">
+                <h3>Daftar Diskon</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nama Diskon</th>
+                                <th>Nilai</th>
+                                <th>Berlaku Untuk</th>
+                                <th>Periode</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="discounts-tbody">
+                            <tr class="empty-row">
+                                <td colspan="6">
+                                    <div class="empty-state">
+                                        <p>Memuat data diskon...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Modal for Discount Form -->
+    <div id="discount-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="discount-modal-title">Tambah Diskon</h3>
+                <button class="modal-close" id="close-discount-modal">&times;</button>
+            </div>
+            <form id="discount-form">
+                <div class="form-group">
+                    <label for="discount-name">Nama Diskon *</label>
+                    <input type="text" id="discount-name" class="input" placeholder="Contoh: Diskon Akhir Tahun" required>
+                </div>
+    
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="discount-type">Tipe Diskon *</label>
+                        <select id="discount-type" class="select-input" required>
+                            <option value="">Pilih Tipe</option>
+                            <option value="percentage">Persentase (%)</option>
+                            <option value="fixed">Nominal (Rp)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="discount-value">Nilai Diskon *</label>
+                        <input type="number" id="discount-value" class="input" min="0" step="0.01"
+                            placeholder="Contoh: 10 atau 5000" required>
+                    </div>
+                </div>
+    
+                <div class="form-group">
+                    <label for="discount-applicable-to">Berlaku Untuk *</label>
+                    <select id="discount-applicable-to" class="select-input" required>
+                        <option value="">Pilih Kategori</option>
+                        <option value="all">Semua Produk</option>
+                        <option value="product">Produk Tertentu</option>
+                        <option value="category">Kategori Tertentu</option>
+                    </select>
+                </div>
+    
+                <div id="discount-products-container" class="form-group" style="display: none;">
+                    <label>Pilih Produk</label>
+                    <p class="form-hint">Fitur pemilihan produk akan ditambahkan di versi selanjutnya</p>
+                </div>
+    
+                <div id="discount-categories-container" class="form-group" style="display: none;">
+                    <label>Pilih Kategori</label>
+                    <p class="form-hint">Fitur pemilihan kategori akan ditambahkan di versi selanjutnya</p>
+                </div>
+    
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="discount-valid-from">Berlaku Dari *</label>
+                        <input type="date" id="discount-valid-from" class="input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="discount-valid-to">Berlaku Sampai</label>
+                        <input type="date" id="discount-valid-to" class="input">
+                        <small class="form-hint">Kosongkan untuk tidak terbatas</small>
+                    </div>
+                </div>
+    
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="discount-active" checked>
+                        <span>Aktifkan diskon</span>
+                    </label>
+                </div>
+    
+                <input type="hidden" id="discount-id">
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-text" id="cancel-discount-btn">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal for Product Form -->
     <div id="product-modal" class="modal">
         <div class="modal-content">
@@ -557,6 +691,29 @@
                         <option value="snack">Snack</option>
                         <option value="lainnya">Lainnya</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label for="product-barcode">Barcode (Opsional)</label>
+                    <div class="barcode-input-group">
+                        <input type="text" id="product-barcode" class="input" placeholder="Scan atau masukkan barcode">
+                        <button type="button" class="btn btn-secondary btn-icon" onclick="scanBarcodeForProduct()" title="Scan Barcode">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M3 7V5C3 3.89543 3.89543 3 5 3H7M17 3H19C20.1046 3 21 3.89543 21 5V7M21 17V19C21 20.1046 20.1046 21 19 21H17M7 21H5C3.89543 21 3 20.1046 3 19V17"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                <path
+                                    d="M7 8H7.01M7 12H7.01M7 16H7.01M11 8H11.01M11 12H11.01M11 16H11.01M15 8H15.01M15 12H15.01M15 16H15.01"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-icon" onclick="generateBarcodeForProduct()"
+                            title="Generate Barcode">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M13 10V3L4 14H11V21L20 10H13Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
@@ -635,6 +792,8 @@
     <script src="js/transactions.js"></script>
     <script src="js/reports.js"></script>
     <script src="js/users.js"></script>
+    <script src="js/discounts.js"></script>
+    <script src="js/barcode.js"></script>
     <script src="js/mobile.js"></script>
     <script src="app.js"></script>
 </body>

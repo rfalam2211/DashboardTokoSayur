@@ -200,6 +200,9 @@ async function navigateToPage(pageName) {
             case 'reports':
                 await initReports();
                 break;
+            case 'discounts':
+                await initDiscounts();
+                break;
             case 'users':
                 await initUsers();
                 break;

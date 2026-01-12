@@ -108,6 +108,7 @@ function renderProducts(products) {
         <tr>
             <td>
                 <strong>${product.name}</strong>
+                ${product.barcode ? `<br><small class="barcode-display">📊 ${formatBarcodeDisplay(product.barcode)}</small>` : ''}
             </td>
             <td>
                 <span class="badge badge-success">${product.category}</span>
@@ -172,6 +173,7 @@ function openProductModal(product = null) {
         document.getElementById('product-category').value = product.category;
         document.getElementById('product-price').value = product.price;
         document.getElementById('product-stock').value = product.stock;
+        document.getElementById('product-barcode').value = product.barcode || '';
         editingProductId = product.id;
     } else {
         title.textContent = 'Tambah Produk';
@@ -207,7 +209,8 @@ async function handleProductSubmit(e) {
         name: document.getElementById('product-name').value,
         category: document.getElementById('product-category').value,
         price: document.getElementById('product-price').value,
-        stock: document.getElementById('product-stock').value
+        stock: document.getElementById('product-stock').value,
+        barcode: document.getElementById('product-barcode').value.trim() || null
     };
 
     try {
@@ -275,3 +278,28 @@ async function deleteProductById(id) {
         showToast('Gagal menghapus produk', 'error');
     }
 }
+
+/**
+ * Scan barcode for product form
+ */
+function scanBarcodeForProduct() {
+    // Initialize scanner with callback
+    initBarcodeScanner((barcode) => {
+        // Set the barcode in the product form
+        document.getElementById('product-barcode').value = barcode;
+        showToast('Barcode berhasil di-scan: ' + barcode, 'success');
+    });
+
+    // Show scanner modal
+    showBarcodeScannerModal();
+}
+
+/**
+ * Generate random barcode for product
+ */
+function generateBarcodeForProduct() {
+    const barcode = generateBarcode();
+    document.getElementById('product-barcode').value = barcode;
+    showToast('Barcode berhasil di-generate', 'success');
+}
+
