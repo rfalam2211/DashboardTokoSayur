@@ -203,6 +203,12 @@ async function navigateToPage(pageName) {
             case 'discounts':
                 await initDiscounts();
                 break;
+            case 'customers':
+                await initCustomers();
+                break;
+            case 'debts':
+                await initDebts();
+                break;
             case 'users':
                 await initUsers();
                 break;

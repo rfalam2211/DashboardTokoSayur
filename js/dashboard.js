@@ -13,6 +13,7 @@ let dashboardData = {
 async function initDashboard() {
     await loadDashboardStats();
     await loadLowStockProducts();
+    await loadCreditCustomers();
     await loadRecentTransactions();
 }
 
@@ -26,10 +27,21 @@ async function loadDashboardStats() {
         const transactions = await getAllTransactions(dateRange);
         const expenses = await getAllExpenses(dateRange);
 
-        // Calculate stats
+        // Get all debts for credit calculation
+        const allDebts = await getAllDebts();
+        const unpaidDebts = allDebts.filter(d => d.status !== 'paid');
+
+        // Calculate stats - separate cash and credit sales
         dashboardData.totalProducts = products.length;
         dashboardData.todayTransactions = transactions.length;
-        dashboardData.todaySales = transactions.reduce((sum, t) => sum + t.total, 0);
+
+        // Cash sales only (exclude credit)
+        const cashTransactions = transactions.filter(t => t.paymentMethod !== 'credit');
+        dashboardData.todaySales = cashTransactions.reduce((sum, t) => sum + t.total, 0);
+
+        // Total outstanding credit/piutang
+        const totalCredit = unpaidDebts.reduce((sum, d) => sum + (d.amount - (d.paid || 0)), 0);
+        const uniqueCustomers = new Set(unpaidDebts.map(d => d.customerId)).size;
 
         const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
         dashboardData.netProfit = dashboardData.todaySales - totalExpenses;
@@ -39,6 +51,10 @@ async function loadDashboardStats() {
         document.getElementById('total-products').textContent = dashboardData.totalProducts;
         document.getElementById('today-transactions').textContent = dashboardData.todayTransactions;
         document.getElementById('net-profit').textContent = formatCurrency(dashboardData.netProfit);
+
+        // Update credit/piutang card
+        document.getElementById('total-credit').textContent = formatCurrency(totalCredit);
+        document.getElementById('credit-info').textContent = `${uniqueCustomers} Pelanggan`;
 
         // Update change indicators
         document.getElementById('products-info').textContent = `${products.reduce((sum, p) => sum + p.stock, 0)} Total Stok`;
@@ -138,4 +154,58 @@ async function loadRecentTransactions() {
  */
 async function refreshDashboard() {
     await initDashboard();
+}
+
+/**
+ * Load customers with outstanding credit
+ */
+async function loadCreditCustomers() {
+    try {
+        const allDebts = await getAllDebts();
+        const unpaidDebts = allDebts.filter(d => d.status !== 'paid');
+        
+        // Group by customer
+        const customerDebts = {};
+        for (const debt of unpaidDebts) {
+            if (!customerDebts[debt.customerId]) {
+                customerDebts[debt.customerId] = {
+                    customerId: debt.customerId,
+                    customerName: debt.customerName,
+                    totalDebt: 0,
+                    debtCount: 0
+                };
+            }
+            customerDebts[debt.customerId].totalDebt += (debt.amount - (debt.paid || 0));
+            customerDebts[debt.customerId].debtCount++;
+        }
+        
+        const customers = Object.values(customerDebts);
+        const container = document.getElementById('credit-customers-list');
+        
+        if (customers.length === 0) {
+            container.innerHTML = '<div class="empty-state"><p>Tidak ada piutang aktif</p></div>';
+            return;
+        }
+        
+        // Sort by total debt (highest first)
+        customers.sort((a, b) => b.totalDebt - a.totalDebt);
+        
+        // Show top 5
+        const topCustomers = customers.slice(0, 5);
+        
+        container.innerHTML = topCustomers.map(customer => 
+            <div class="list-item" onclick="navigateToPage('debts')">
+                <div class="list-item-content">
+                    <h4></h4>
+                    <p> hutang aktif</p>
+                </div>
+                <div class="list-item-value">
+                    <span class="badge badge-warning"></span>
+                </div>
+            </div>
+        ).join('');
+        
+    } catch (error) {
+        console.error('Error loading credit customers:', error);
+    }
 }

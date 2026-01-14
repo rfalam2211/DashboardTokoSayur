@@ -20,8 +20,18 @@
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
-    <!-- Sidebar Navigation -->
-    <aside class="sidebar">
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle Menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+    </button>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="logo">
                 <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -99,6 +109,25 @@
                     <circle cx="10" cy="7" r="2" fill="white" />
                 </svg>
                 <span>Diskon</span>
+            </a>
+            <a href="#customers" class="nav-item" data-page="customers">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M10 9C11.6569 9 13 7.65685 13 6C13 4.34315 11.6569 3 10 3C8.34315 3 7 4.34315 7 6C7 7.65685 8.34315 9 10 9Z"
+                        fill="currentColor" />
+                    <path d="M3 18C3 14.134 6.13401 11 10 11C13.866 11 17 14.134 17 18H3Z" fill="currentColor" />
+                </svg>
+                <span>Pelanggan</span>
+            </a>
+            
+            <a href="#debts" class="nav-item" data-page="debts">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 4C2.89543 4 2 4.89543 2 6V7H18V6C18 4.89543 17.1046 4 16 4H4Z" fill="currentColor" />
+                    <path fill-rule="evenodd"
+                        d="M18 9H2V14C2 15.1046 2.89543 16 4 16H16C17.1046 16 18 15.1046 18 14V9ZM4 13C4 12.4477 4.44772 12 5 12H6C6.55228 12 7 12.4477 7 13C7 13.5523 6.55228 14 6 14H5C4.44772 14 4 13.5523 4 13ZM9 12C8.44772 12 8 12.4477 8 13C8 13.5523 8.44772 14 9 14H10C10.5523 14 11 13.5523 11 13C11 12.4477 10.5523 12 10 12H9Z"
+                        clip-rule="evenodd" fill="currentColor" />
+                </svg>
+                <span>Hutang</span>
             </a>
             <a href="#users" class="nav-item" data-page="users">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -200,6 +229,21 @@
                         <p class="stat-change positive" id="profit-change">+0%</p>
                     </div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-icon yellow">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M4 4C2.89543 4 2 4.89543 2 6V7H22V6C22 4.89543 21.1046 4 20 4H4Z" fill="currentColor" />
+                            <path fill-rule="evenodd"
+                                d="M22 9H2V18C2 19.1046 2.89543 20 4 20H20C21.1046 20 22 19.1046 22 18V9ZM6 15C6 14.4477 6.44772 14 7 14H9C9.55228 14 10 14.4477 10 15C10 15.5523 9.55228 16 9 16H7C6.44772 16 6 15.5523 6 15Z"
+                                clip-rule="evenodd" fill="currentColor" />
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <p class="stat-label">Piutang Aktif</p>
+                        <h3 class="stat-value" id="total-credit">Rp 0</h3>
+                        <p class="stat-change" id="credit-info">0 Pelanggan</p>
+                    </div>
+                </div>
             </div>
             
             <div class="dashboard-grid">
@@ -217,6 +261,19 @@
                     </div>
                 </div>
                 
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Pelanggan Berutang</h3>
+                        <a href="#debts" class="btn btn-text" onclick="navigateToPage('debts')">Lihat Semua</a>
+                    </div>
+                    <div class="card-body">
+                        <div id="credit-customers-list" class="list-container">
+                            <div class="empty-state">
+                                <p>Tidak ada piutang aktif</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="card">
                     <div class="card-header">
                         <h3>Transaksi Terbaru</h3>
@@ -318,12 +375,23 @@
                         <h3>Pilih Produk</h3>
                     </div>
                     <div class="card-body">
-                        <div class="search-box">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <div class="search-box-enhanced">
+                            <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z" stroke="currentColor" stroke-width="2"/>
                                 <path d="M19 19L14.65 14.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
                             <input type="text" id="search-pos-products" placeholder="Cari produk untuk ditambahkan...">
+                            <button class="clear-search" id="clear-pos-search-btn" style="display: none;">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                </svg>
+                            </button>
+                            <button class="btn btn-icon" id="scan-barcode-pos-btn" title="Scan Barcode">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2" />
+                                    <path d="M7 7V17M10 7V17M13 7V17M16 7V17" stroke="currentColor" stroke-width="2" />
+                                </svg>
+                            </button>
                         </div>
                         <div id="pos-products-list" class="products-grid">
                             <!-- Products will be loaded here -->
@@ -344,18 +412,34 @@
                         </div>
                     </div>
                     <div class="cart-footer">
-                        <div class="cart-total">
-                            <span>Total:</span>
-                            <h3 id="cart-total-amount">Rp 0</h3>
+                        <div class="cart-totals">
+                            <div class="cart-total-row">
+                                <span>Subtotal:</span>
+                                <span id="cart-subtotal">Rp 0</span>
+                            </div>
+                            <div class="cart-total-row" style="color: var(--color-success);">
+                                <span>Diskon:</span>
+                                <span id="cart-discount">Rp 0</span>
+                            </div>
+                            <div class="cart-total">
+                                <span>Total:</span>
+                                <h3 id="cart-total-amount">Rp 0</h3>
+                            </div>
                         </div>
                         <div class="payment-method">
                             <label>Metode Pembayaran:</label>
                             <select id="payment-method" class="select-input">
-                                <option value="tunai">Tunai</option>
+                                <option value="cash">Tunai</option>
                                 <option value="transfer">Transfer</option>
                                 <option value="qris">QRIS</option>
-                            </select>
-                        </div>
+                                <option value="credit">Kredit</option>
+                                </select>
+                                </div>
+                                <div id="credit-customer-container" class="payment-method" style="display: none;">
+                                    <label>Nama Pelanggan:</label>
+                                    <input type="text" id="credit-customer-name" class="input" placeholder="Masukkan nama pelanggan..."
+                                        autocomplete="off">
+                                </div>
                         <button class="btn btn-primary btn-block" id="process-transaction-btn" disabled>
                             Proses Transaksi
                         </button>
@@ -670,6 +754,226 @@
         </div>
     </div>
 
+    <!-- Customers Page -->
+    <section id="customers-page" class="page">
+        <div class="page-header">
+            <div>
+                <h2>Manajemen Pelanggan</h2>
+                <p class="page-subtitle">Kelola data pelanggan dan hutang</p>
+            </div>
+            <button class="btn btn-primary" id="add-customer-btn">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 5V15M5 10H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                Tambah Pelanggan
+            </button>
+        </div>
+    
+        <div class="card">
+            <div class="card-header">
+                <h3>Daftar Pelanggan</h3>
+                <input type="text" id="search-customers" class="input" placeholder="Cari pelanggan..."
+                    style="max-width: 300px;">
+            </div>
+            <div class="card-body">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nama</th>
+                                <th>Telepon</th>
+                                <th>Alamat</th>
+                                <th>Total Hutang</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customers-tbody">
+                            <tr class="empty-row">
+                                <td colspan="5">
+                                    <div class="empty-state">
+                                        <p>Memuat data pelanggan...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Debts Page -->
+    <section id="debts-page" class="page">
+        <div class="page-header">
+            <div>
+                <h2>Manajemen Hutang</h2>
+                <p class="page-subtitle">Kelola hutang pelanggan dan pembayaran</p>
+            </div>
+            <button class="btn btn-primary" id="add-debt-btn">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 5V15M5 10H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                Tambah Hutang
+            </button>
+        </div>
+    
+        <div class="card">
+            <div class="card-header">
+                <h3>Ringkasan Hutang</h3>
+            </div>
+            <div class="card-body">
+                <div id="debt-summary" class="debt-summary">
+                    <!-- Summary will be loaded here -->
+                </div>
+            </div>
+        </div>
+    
+        <div class="card">
+            <div class="card-header">
+                <h3>Daftar Hutang</h3>
+                <div style="display: flex; gap: 1rem;">
+                    <select id="debt-status-filter" class="select-input">
+                        <option value="">Semua Status</option>
+                        <option value="pending">Belum Dibayar</option>
+                        <option value="partial">Dibayar Sebagian</option>
+                        <option value="paid">Lunas</option>
+                        <option value="overdue">Jatuh Tempo</option>
+                    </select>
+                    <select id="debt-customer-filter" class="select-input">
+                        <option value="">Semua Pelanggan</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Pelanggan</th>
+                                <th>Jumlah</th>
+                                <th>Dibayar</th>
+                                <th>Sisa</th>
+                                <th>Jatuh Tempo</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="debts-tbody">
+                            <tr class="empty-row">
+                                <td colspan="7">
+                                    <div class="empty-state">
+                                        <p>Memuat data hutang...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Customer Modal -->
+    <div id="customer-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="customer-modal-title">Tambah Pelanggan</h3>
+                <button class="modal-close" id="close-customer-modal">&times;</button>
+            </div>
+            <form id="customer-form">
+                <div class="form-group">
+                    <label for="customer-name">Nama Pelanggan *</label>
+                    <input type="text" id="customer-name" class="input" required>
+                </div>
+                <div class="form-group">
+                    <label for="customer-phone">Telepon</label>
+                    <input type="tel" id="customer-phone" class="input" placeholder="08xxxxxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label for="customer-address">Alamat</label>
+                    <textarea id="customer-address" class="input" rows="3"></textarea>
+                </div>
+                <input type="hidden" id="customer-id">
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-text" id="cancel-customer-btn">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Debt Modal -->
+    <div id="debt-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="debt-modal-title">Tambah Hutang</h3>
+                <button class="modal-close" id="close-debt-modal">&times;</button>
+            </div>
+            <form id="debt-form">
+                <div class="form-group">
+                    <label for="debt-customer">Pelanggan *</label>
+                    <select id="debt-customer" class="select-input" required>
+                        <option value="">Pilih Pelanggan</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="debt-amount">Jumlah Hutang (Rp) *</label>
+                    <input type="number" id="debt-amount" class="input" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="debt-due-date">Jatuh Tempo *</label>
+                    <input type="date" id="debt-due-date" class="input" required>
+                </div>
+                <div class="form-group">
+                    <label for="debt-notes">Catatan</label>
+                    <textarea id="debt-notes" class="input" rows="3" placeholder="Catatan tambahan..."></textarea>
+                </div>
+                <input type="hidden" id="debt-id">
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-text" id="cancel-debt-btn">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Payment Modal -->
+    <div id="payment-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Catat Pembayaran</h3>
+                <button class="modal-close" id="close-payment-modal">&times;</button>
+            </div>
+            <form id="payment-form">
+                <div class="payment-info">
+                    <p><strong>Pelanggan:</strong> <span id="payment-customer-name"></span></p>
+                    <p><strong>Sisa Hutang:</strong> <span id="payment-remaining"></span></p>
+                </div>
+                <div class="form-group">
+                    <label for="payment-amount">Jumlah Bayar (Rp) *</label>
+                    <input type="number" id="payment-amount" class="input" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="payment-method">Metode Pembayaran *</label>
+                    <select id="payment-method" class="select-input" required>
+                        <option value="cash">Tunai</option>
+                        <option value="transfer">Transfer</option>
+                        <option value="qris">QRIS</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="payment-notes">Catatan</label>
+                    <textarea id="payment-notes" class="input" rows="2"></textarea>
+                </div>
+                <input type="hidden" id="payment-debt-id">
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-text" id="cancel-payment-btn">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Pembayaran</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal for Product Form -->
     <div id="product-modal" class="modal">
         <div class="modal-content">
@@ -793,6 +1097,8 @@
     <script src="js/reports.js"></script>
     <script src="js/users.js"></script>
     <script src="js/discounts.js"></script>
+    <script src="js/customers.js"></script>
+    <script src="js/debts.js"></script>
     <script src="js/barcode.js"></script>
     <script src="js/mobile.js"></script>
     <script src="app.js"></script>

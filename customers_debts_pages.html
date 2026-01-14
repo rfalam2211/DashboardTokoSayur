@@ -1,0 +1,220 @@
+<!-- CUSTOMERS AND DEBTS PAGES - INSERT THIS BEFORE PRODUCT MODAL -->
+
+    <!-- Customers Page -->
+    <section id="customers-page" class="page">
+        <div class="page-header">
+            <div>
+                <h2>Manajemen Pelanggan</h2>
+                <p class="page-subtitle">Kelola data pelanggan dan hutang</p>
+            </div>
+            <button class="btn btn-primary" id="add-customer-btn">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 5V15M5 10H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                Tambah Pelanggan
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Daftar Pelanggan</h3>
+                <input type="text" id="search-customers" class="input" placeholder="Cari pelanggan..." style="max-width: 300px;">
+            </div>
+            <div class="card-body">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nama</th>
+                                <th>Telepon</th>
+                                <th>Alamat</th>
+                                <th>Total Hutang</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customers-tbody">
+                            <tr class="empty-row">
+                                <td colspan="5">
+                                    <div class="empty-state">
+                                        <p>Memuat data pelanggan...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Debts Page -->
+    <section id="debts-page" class="page">
+        <div class="page-header">
+            <div>
+                <h2>Manajemen Hutang</h2>
+                <p class="page-subtitle">Kelola hutang pelanggan dan pembayaran</p>
+            </div>
+            <button class="btn btn-primary" id="add-debt-btn">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 5V15M5 10H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                Tambah Hutang
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Ringkasan Hutang</h3>
+            </div>
+            <div class="card-body">
+                <div id="debt-summary" class="debt-summary">
+                    <!-- Summary will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Daftar Hutang</h3>
+                <div style="display: flex; gap: 1rem;">
+                    <select id="debt-status-filter" class="select-input">
+                        <option value="">Semua Status</option>
+                        <option value="pending">Belum Dibayar</option>
+                        <option value="partial">Dibayar Sebagian</option>
+                        <option value="paid">Lunas</option>
+                        <option value="overdue">Jatuh Tempo</option>
+                    </select>
+                    <select id="debt-customer-filter" class="select-input">
+                        <option value="">Semua Pelanggan</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Pelanggan</th>
+                                <th>Jumlah</th>
+                                <th>Dibayar</th>
+                                <th>Sisa</th>
+                                <th>Jatuh Tempo</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="debts-tbody">
+                            <tr class="empty-row">
+                                <td colspan="7">
+                                    <div class="empty-state">
+                                        <p>Memuat data hutang...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Customer Modal -->
+    <div id="customer-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="customer-modal-title">Tambah Pelanggan</h3>
+                <button class="modal-close" id="close-customer-modal">&times;</button>
+            </div>
+            <form id="customer-form">
+                <div class="form-group">
+                    <label for="customer-name">Nama Pelanggan *</label>
+                    <input type="text" id="customer-name" class="input" required>
+                </div>
+                <div class="form-group">
+                    <label for="customer-phone">Telepon</label>
+                    <input type="tel" id="customer-phone" class="input" placeholder="08xxxxxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label for="customer-address">Alamat</label>
+                    <textarea id="customer-address" class="input" rows="3"></textarea>
+                </div>
+                <input type="hidden" id="customer-id">
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-text" id="cancel-customer-btn">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Debt Modal -->
+    <div id="debt-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="debt-modal-title">Tambah Hutang</h3>
+                <button class="modal-close" id="close-debt-modal">&times;</button>
+            </div>
+            <form id="debt-form">
+                <div class="form-group">
+                    <label for="debt-customer">Pelanggan *</label>
+                    <select id="debt-customer" class="select-input" required>
+                        <option value="">Pilih Pelanggan</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="debt-amount">Jumlah Hutang (Rp) *</label>
+                    <input type="number" id="debt-amount" class="input" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="debt-due-date">Jatuh Tempo *</label>
+                    <input type="date" id="debt-due-date" class="input" required>
+                </div>
+                <div class="form-group">
+                    <label for="debt-notes">Catatan</label>
+                    <textarea id="debt-notes" class="input" rows="3" placeholder="Catatan tambahan..."></textarea>
+                </div>
+                <input type="hidden" id="debt-id">
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-text" id="cancel-debt-btn">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="payment-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Catat Pembayaran</h3>
+                <button class="modal-close" id="close-payment-modal">&times;</button>
+            </div>
+            <form id="payment-form">
+                <div class="payment-info">
+                    <p><strong>Pelanggan:</strong> <span id="payment-customer-name"></span></p>
+                    <p><strong>Sisa Hutang:</strong> <span id="payment-remaining"></span></p>
+                </div>
+                <div class="form-group">
+                    <label for="payment-amount">Jumlah Bayar (Rp) *</label>
+                    <input type="number" id="payment-amount" class="input" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="payment-method">Metode Pembayaran *</label>
+                    <select id="payment-method" class="select-input" required>
+                        <option value="cash">Tunai</option>
+                        <option value="transfer">Transfer</option>
+                        <option value="qris">QRIS</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="payment-notes">Catatan</label>
+                    <textarea id="payment-notes" class="input" rows="2"></textarea>
+                </div>
+                <input type="hidden" id="payment-debt-id">
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-text" id="cancel-payment-btn">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Pembayaran</button>
+                </div>
+            </form>
+        </div>
+    </div>

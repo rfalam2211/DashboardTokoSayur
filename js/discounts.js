@@ -264,10 +264,11 @@ async function editDiscount(id) {
     }
 
     try {
-        const discounts = await getAllDiscounts();
-        const discount = discounts.find(d => d.id === id);
+        const discount = discountsCache.find(d => d.id === id);
         if (discount) {
             openDiscountModal(discount);
+        } else {
+            showToast('Diskon tidak ditemukan', 'error');
         }
     } catch (error) {
         console.error('Error loading discount:', error);
