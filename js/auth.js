@@ -3,6 +3,40 @@
 const SESSION_KEY = 'tokoku_session';
 
 /**
+ * Hash password using bcrypt
+ * @param {string} password - Plain text password
+ * @returns {string} Hashed password
+ */
+function hashPassword(password) {
+    const salt = bcrypt.genSaltSync(10);
+    return bcrypt.hashSync(password, salt);
+}
+
+/**
+ * Verify password against hash
+ * @param {string} password - Plain text password
+ * @param {string} hash - Hashed password
+ * @returns {boolean} True if password matches
+ */
+function verifyPassword(password, hash) {
+    try {
+        return bcrypt.compareSync(password, hash);
+    } catch (error) {
+        console.error('Password verification error:', error);
+        return false;
+    }
+}
+
+/**
+ * Check if password is hashed (bcrypt hashes start with $2a$, $2b$, or $2y$)
+ * @param {string} password - Password string to check
+ * @returns {boolean} True if password appears to be hashed
+ */
+function isPasswordHashed(password) {
+    return password && (password.startsWith('$2a$') || password.startsWith('$2b$') || password.startsWith('$2y$'));
+}
+
+/**
  * Login user
  * @param {string} username - Username
  * @param {string} password - Password
@@ -16,8 +50,25 @@ async function login(username, password) {
             return null;
         }
 
-        // In production, use proper password hashing (bcrypt, etc.)
-        if (user.password === password) {
+        // Check if password is hashed
+        let passwordMatches = false;
+
+        if (isPasswordHashed(user.password)) {
+            // Verify hashed password
+            passwordMatches = verifyPassword(password, user.password);
+        } else {
+            // Legacy plain-text password - compare directly and migrate
+            passwordMatches = (user.password === password);
+
+            if (passwordMatches) {
+                // Migrate to hashed password
+                console.log('Migrating password for user:', username);
+                const hashedPassword = hashPassword(password);
+                await updateUser(user.id, { ...user, password: hashedPassword });
+            }
+        }
+
+        if (passwordMatches) {
             // Create session
             const session = {
                 id: user.id,

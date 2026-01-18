@@ -196,7 +196,8 @@ async function handleUserFormSubmit(e) {
             
             // Only update password if provided
             if (password) {
-                updates.password = password;
+                // Hash the new password
+                updates.password = hashPassword(password);
             }
             
             await updateUser(userId, updates);
@@ -215,10 +216,13 @@ async function handleUserFormSubmit(e) {
                 return;
             }
 
+            // Hash password before saving
+            const hashedPassword = hashPassword(password);
+
             await addUser({
                 name: name,
                 username: username,
-                password: password,
+                password: hashedPassword,
                 role: role
             });
             

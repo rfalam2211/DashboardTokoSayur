@@ -1,7 +1,7 @@
 // IndexedDB Database Management
 
 const DB_NAME = 'TokoKuDB';
-const DB_VERSION = 3; // Updated for new features
+const DB_VERSION = 4; // Updated for activity logs and permissions
 
 let db = null;
 
@@ -87,6 +87,15 @@ function initDB() {
                 debtsStore.createIndex('status', 'status', { unique: false });
                 debtsStore.createIndex('dueDate', 'dueDate', { unique: false });
                 debtsStore.createIndex('createdAt', 'createdAt', { unique: false });
+            }
+
+            // Activity Logs store (NEW - Version 4)
+            if (!db.objectStoreNames.contains('activityLogs')) {
+                const logsStore = db.createObjectStore('activityLogs', { keyPath: 'id' });
+                logsStore.createIndex('userId', 'userId', { unique: false });
+                logsStore.createIndex('module', 'module', { unique: false });
+                logsStore.createIndex('action', 'action', { unique: false });
+                logsStore.createIndex('timestamp', 'timestamp', { unique: false });
             }
 
             console.log('Database setup complete - Version', DB_VERSION);
