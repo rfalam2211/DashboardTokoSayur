@@ -1,5 +1,8 @@
 // Authentication Module
 
+// Get bcrypt from CDN (exposed as dcodeIO.bcrypt or window.bcrypt)
+const bcrypt = window.dcodeIO?.bcrypt || window.bcrypt;
+
 const SESSION_KEY = 'tokoku_session';
 
 /**
