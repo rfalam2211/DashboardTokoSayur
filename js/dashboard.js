@@ -193,17 +193,17 @@ async function loadCreditCustomers() {
         // Show top 5
         const topCustomers = customers.slice(0, 5);
         
-        container.innerHTML = topCustomers.map(customer => 
+        container.innerHTML = topCustomers.map(customer => `
             <div class="list-item" onclick="navigateToPage('debts')">
                 <div class="list-item-content">
-                    <h4></h4>
-                    <p> hutang aktif</p>
+                    <h4>${customer.customerName || 'Unknown'}</h4>
+                    <p>${customer.debtCount} hutang aktif</p>
                 </div>
                 <div class="list-item-value">
-                    <span class="badge badge-warning"></span>
+                    <span class="badge badge-warning">${formatCurrency(customer.totalDebt)}</span>
                 </div>
             </div>
-        ).join('');
+        `).join('');
         
     } catch (error) {
         console.error('Error loading credit customers:', error);
