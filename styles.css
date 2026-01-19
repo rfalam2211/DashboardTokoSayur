@@ -2382,3 +2382,88 @@ tbody tr:hover {
         padding: 0.2rem 0.4rem;
     }
 }
+/* Additional responsive fixes for debts page and filtering */
+@media (max-width: 768px) {
+
+    /* Card header with filters - stack vertically */
+    .card-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-md);
+    }
+
+    .card-header>div[style*="display: flex"] {
+        flex-wrap: wrap;
+        gap: 0.5rem !important;
+    }
+
+    /* Filter dropdowns full width on mobile */
+    .select-input {
+        min-width: 140px;
+        flex: 1;
+    }
+
+    /* Page subtitle */
+    .page-subtitle {
+        font-size: 0.8rem;
+        word-wrap: break-word;
+    }
+
+    /* Better table header on mobile */
+    th,
+    td {
+        padding: var(--spacing-sm);
+        font-size: 0.8rem;
+    }
+
+    /* Debt summary grid */
+    .debt-summary {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: var(--spacing-sm);
+    }
+
+    .debt-summary .stat-value {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+
+    /* Even smaller screens */
+    .card-header>div[style*="display: flex"] {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .select-input {
+        width: 100%;
+    }
+
+    /* Debt summary single column */
+    .debt-summary {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Smaller table font */
+    th,
+    td {
+        padding: 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    /* Table needs horizontal scroll indicator */
+    .table-container {
+        position: relative;
+    }
+
+    .table-container::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 20px;
+        background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.05));
+        pointer-events: none;
+    }
+}
