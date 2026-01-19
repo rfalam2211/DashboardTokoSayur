@@ -2,8 +2,8 @@
 // This module handles cloud database operations using Supabase
 
 // Supabase Configuration - Replace with your project details
-const SUPABASE_URL = 'YOUR_SUPABASE_URL'; // e.g., https://xxxxx.supabase.co
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const SUPABASE_URL = 'https://rnpvfhllrmdwgoxpmapr.supabase.co'; // e.g., https://xxxxx.supabase.co
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJucHZmaGxscm1kd2dveHBtYXByIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4MDk2MDUsImV4cCI6MjA4NDM4NTYwNX0.9-PufKDfndh6GTlvR756_n_92mVOOYuC0r3qbS4n3Nk';
 
 let supabase = null;
 
@@ -25,7 +25,8 @@ function initSupabase() {
  * Check if Supabase is configured
  */
 function isSupabaseConfigured() {
-    return SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY';
+    // Return true since credentials are now properly configured
+    return SUPABASE_URL.includes('supabase.co') && SUPABASE_ANON_KEY.startsWith('eyJ');
 }
 
 /**
