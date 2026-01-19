@@ -2467,3 +2467,33 @@ tbody tr:hover {
         pointer-events: none;
     }
 }
+/* Fix sidebar overlap - ensure content doesn't get hidden by sidebar */
+@media (min-width: 769px) {
+    .main-content {
+        margin-left: 260px !important;
+        /* Sidebar width */
+        padding-left: var(--spacing-xl);
+    }
+
+    .page-header h2 {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+}
+
+/* For tablet screens where sidebar might overlap */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .main-content {
+        margin-left: 260px !important;
+        padding: var(--spacing-lg);
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .page-header {
+        flex-wrap: wrap;
+        gap: var(--spacing-md);
+    }
+}
