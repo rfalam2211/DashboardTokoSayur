@@ -72,15 +72,8 @@ async function login(username, password) {
             // Verify hashed password
             passwordMatches = verifyPassword(password, user.password);
         } else {
-            // Legacy plain-text password - compare directly and migrate
+            // Plain-text password - compare directly (skip migration for now)
             passwordMatches = (user.password === password);
-
-            if (passwordMatches) {
-                // Migrate to hashed password
-                console.log('Migrating password for user:', username);
-                const hashedPassword = hashPassword(password);
-                await updateUser(user.id, { ...user, password: hashedPassword });
-            }
         }
 
         if (passwordMatches) {
