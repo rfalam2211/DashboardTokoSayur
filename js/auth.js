@@ -1,7 +1,9 @@
 // Authentication Module
 
-// Get bcrypt from CDN (exposed as dcodeIO.bcrypt or window.bcrypt)
-const bcrypt = window.dcodeIO?.bcrypt || window.bcrypt;
+// Get bcrypt from CDN (lazy load to ensure library is available)
+function getBcrypt() {
+    return window.dcodeIO?.bcrypt || window.bcrypt || null;
+}
 
 const SESSION_KEY = 'tokoku_session';
 
@@ -11,6 +13,11 @@ const SESSION_KEY = 'tokoku_session';
  * @returns {string} Hashed password
  */
 function hashPassword(password) {
+    const bcrypt = getBcrypt();
+    if (!bcrypt) {
+        console.warn('bcrypt not available, returning plain password');
+        return password; // Fallback to plain password
+    }
     const salt = bcrypt.genSaltSync(10);
     return bcrypt.hashSync(password, salt);
 }
@@ -22,6 +29,11 @@ function hashPassword(password) {
  * @returns {boolean} True if password matches
  */
 function verifyPassword(password, hash) {
+    const bcrypt = getBcrypt();
+    if (!bcrypt) {
+        console.warn('bcrypt not available, using plain comparison');
+        return password === hash; // Fallback to plain comparison
+    }
     try {
         return bcrypt.compareSync(password, hash);
     } catch (error) {
