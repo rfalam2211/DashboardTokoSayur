@@ -332,7 +332,37 @@
         async function initLogin() {
             try {
                 await initDB();
-                await seedDefaultUsers();
+                console.log('Database initialized');
+
+                // Check existing users and their passwords
+                const users = await getAllUsers();
+                console.log('Existing users:', users.length);
+
+                if (users.length > 0) {
+                    // Check if passwords are hashed (legacy issue)
+                    const hasHashedPasswords = users.some(u =>
+                        u.password && (u.password.startsWith('$2a$') || u.password.startsWith('$2b$'))
+                    );
+
+                    if (hasHashedPasswords) {
+                        console.log('Found hashed passwords - resetting users...');
+                        // Delete all users and re-seed with plain passwords
+                        for (const user of users) {
+                            await deleteUser(user.id);
+                        }
+                        await seedDefaultUsers();
+                        console.log('Users reset with plain passwords');
+                    }
+                } else {
+                    await seedDefaultUsers();
+                }
+
+                // Log current user state for debugging
+                const currentUsers = await getAllUsers();
+                currentUsers.forEach(u => {
+                    console.log(`User: ${u.username}, Password type: ${u.password?.startsWith('$2') ? 'HASHED' : 'PLAIN'}`);
+                });
+                
             } catch (error) {
                 console.error('Error initializing login:', error);
             }
