@@ -2479,6 +2479,21 @@ tbody tr:hover {
         word-wrap: break-word;
         overflow-wrap: break-word;
     }
+        /* Ensure all page sections respect sidebar */
+        .page {
+            width: 100%;
+            max-width: 100%;
+        }
+    
+        .page-header {
+            width: 100%;
+            max-width: 100%;
+        }
+    
+        .card {
+            width: 100%;
+            max-width: 100%;
+        }
 }
 
 /* For tablet screens where sidebar might overlap */
@@ -2495,5 +2510,16 @@ tbody tr:hover {
     .page-header {
         flex-wrap: wrap;
         gap: var(--spacing-md);
+    }
+}
+/* Additional fix for very specific sidebar overlap issue */
+@media (min-width: 769px) {
+    body {
+        overflow-x: hidden;
+    }
+
+    #customers-page,
+    #debts-page {
+        padding-right: var(--spacing-md);
     }
 }
