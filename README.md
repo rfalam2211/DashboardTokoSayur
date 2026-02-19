@@ -90,9 +90,7 @@ A modern, feature-rich Progressive Web App (PWA) for small to medium-sized busin
 
 2. **Open the application**
    - Simply open `login.html` in your web browser
-   - Default credentials:
-     - Admin: `admin` / `admin123`
-     - Cashier: `kasir` / `kasir123`
+   - Login using your admin credentials
 
 #### Option 2: Local Development Server
 ```bash
@@ -112,8 +110,8 @@ npx http-server
 4. Launch from your home screen like a native app!
 
 ### First Time Setup
-1. The app will automatically initialize the database
-2. Login with default credentials (admin/admin123)
+1. The app will automatically connect to the Supabase cloud database
+2. Login using your admin credentials
 3. Begin by adding products in the Product Management section
 4. Process sales through the POS interface
 5. View reports and analytics in the Reports section
@@ -203,16 +201,6 @@ This application uses **IndexedDB v3** for local data storage:
 - **Tablet**: 769px - 1024px (2-column layouts)
 - **Desktop**: >1024px (full sidebar, multi-column)
 
-## 🔐 Default Users
-
-The app comes with two default users:
-
-| Username | Password | Role | Permissions |
-|----------|----------|------|-------------|
-| admin | admin123 | Admin | Full access to all features |
-| kasir | kasir123 | Cashier | POS, Products (view only), Transactions |
-
-**⚠️ Important**: Change default passwords in production!
 
 ## 🚀 Performance
 
