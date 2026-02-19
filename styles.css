@@ -1164,7 +1164,8 @@ tbody tr:hover {
     }
 }
 
-@media (max-width: 768px) {
+/* Mobile breakpoint - only hide sidebar on small phones */
+@media (max-width: 640px) {
     :root {
         --sidebar-width: 0;
     }
@@ -1406,7 +1407,7 @@ tbody tr:hover {
 }
 
 /* Mobile Media Queries */
-@media (max-width: 768px) {
+@media (max-width: 640px) {
 
     /* Show hamburger menu */
     .hamburger-menu {
@@ -1636,7 +1637,7 @@ tbody tr:hover {
 }
 
 /* Landscape mobile */
-@media (max-width: 768px) and (orientation: landscape) {
+@media (max-width: 640px) and (orientation: landscape) {
     .main-content {
         padding-top: var(--spacing-lg);
     }
@@ -1841,7 +1842,7 @@ tbody tr:hover {
 }
 
 /* Mobile Scanner Adjustments */
-@media (max-width: 768px) {
+@media (max-width: 640px) {
     .modal-scanner {
         width: 100%;
         max-width: 100%;
@@ -2057,7 +2058,7 @@ tbody tr:hover {
 }
 
 /* Mobile adjustments for discount controls */
-@media (max-width: 768px) {
+@media (max-width: 640px) {
     .discount-controls {
         flex-direction: column;
         align-items: stretch;
@@ -2177,7 +2178,7 @@ tbody tr:hover {
 }
 
 /* Mobile Responsive Styles */
-@media (max-width: 768px) {
+@media (max-width: 640px) {
     .mobile-menu-btn {
         display: flex;
         align-items: center;
@@ -2383,7 +2384,7 @@ tbody tr:hover {
     }
 }
 /* Additional responsive fixes for debts page and filtering */
-@media (max-width: 768px) {
+@media (max-width: 640px) {
 
     /* Card header with filters - stack vertically */
     .card-header {

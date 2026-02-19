@@ -1092,6 +1092,8 @@
 
     <!-- Scripts -->
     <script src="js/utils.js"></script>
+    <!-- Supabase must load BEFORE database.js so isOnlineMode() is available -->
+    <script src="js/supabase.js"></script>
     <script src="js/database.js"></script>
     <script src="js/auth-v2.js"></script>
     <script src="js/dashboard.js"></script>
@@ -1106,7 +1108,6 @@
     <script src="js/barcode.js"></script>
     <script src="js/mobile.js"></script>
     <!-- Phase 6-9 Modules -->
-    <script src="js/supabase.js"></script>
     <script src="js/activity-log.js"></script>
     <script src="js/permissions.js"></script>
     <script src="js/expenses.js"></script>

@@ -27,10 +27,18 @@ async function initApp() {
         // Get current user
         currentUser = getCurrentUser();
 
-        // Initialize database
+        // Initialize Supabase
+        if (typeof initSupabase === 'function') {
+            initSupabase();
+        }
+
+        // initDB is now a no-op stub (Supabase only)
         await initDB();
 
-        // Seed default users
+        // Show Supabase status in sidebar
+        _setStatusSupabase();
+
+        // Seed default users if Supabase table is empty
         await seedDefaultUsers();
 
         // Load user info
@@ -50,7 +58,7 @@ async function initApp() {
         const firstPage = allowedPages.length > 0 ? allowedPages[0] : 'pos';
         await navigateToPage(firstPage);
 
-        console.log('Application initialized successfully');
+        console.log('Application initialized successfully (Supabase Cloud)');
 
     } catch (error) {
         console.error('Error initializing application:', error);
@@ -67,6 +75,17 @@ function loadUserInfo() {
     document.getElementById('user-name').textContent = currentUser.name;
     document.getElementById('user-role').textContent = currentUser.role;
 }
+
+/**
+ * Set sidebar status to always show Supabase Cloud
+ */
+function _setStatusSupabase() {
+    const dot = document.querySelector('.status-dot');
+    const label = document.querySelector('.offline-indicator span');
+    if (dot) dot.style.backgroundColor = '#10b981'; // green
+    if (label) label.textContent = '☁️ Supabase Cloud';
+}
+
 
 /**
  * Setup logout button

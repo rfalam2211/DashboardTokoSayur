@@ -1,988 +1,569 @@
-// IndexedDB Database Management
-
-const DB_NAME = 'TokoKuDB';
-const DB_VERSION = 4; // Updated for activity logs and permissions
-
-let db = null;
+// ============================================================
+// DATABASE.JS — Supabase Cloud Only
+// IndexedDB telah dihapus. Semua data disimpan di Supabase.
+// supabase.js harus dimuat sebelum file ini.
+// ============================================================
 
 /**
- * Initialize IndexedDB
- * @returns {Promise} Promise that resolves when DB is ready
+ * initDB() — compatibility stub (tidak ada IndexedDB)
+ * Dipanggil dari app.js dan login.html, langsung resolve.
  */
 function initDB() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-        request.onerror = () => {
-            console.error('Database failed to open');
-            reject(request.error);
-        };
-
-        request.onsuccess = () => {
-            db = request.result;
-            console.log('Database opened successfully');
-            resolve(db);
-        };
-
-        request.onupgradeneeded = (e) => {
-            db = e.target.result;
-            const oldVersion = e.oldVersion;
-
-            // Products store
-            if (!db.objectStoreNames.contains('products')) {
-                const productsStore = db.createObjectStore('products', { keyPath: 'id' });
-                productsStore.createIndex('name', 'name', { unique: false });
-                productsStore.createIndex('category', 'category', { unique: false });
-                productsStore.createIndex('barcode', 'barcode', { unique: false });
-            } else if (oldVersion < 3) {
-                // Add barcode index to existing products store
-                const transaction = e.target.transaction;
-                const productsStore = transaction.objectStore('products');
-                if (!productsStore.indexNames.contains('barcode')) {
-                    productsStore.createIndex('barcode', 'barcode', { unique: false });
-                }
-            }
-
-            // Transactions store
-            if (!db.objectStoreNames.contains('transactions')) {
-                const transactionsStore = db.createObjectStore('transactions', { keyPath: 'id' });
-                transactionsStore.createIndex('date', 'date', { unique: false });
-                transactionsStore.createIndex('paymentMethod', 'paymentMethod', { unique: false });
-            }
-
-            // Expenses store
-            if (!db.objectStoreNames.contains('expenses')) {
-                const expensesStore = db.createObjectStore('expenses', { keyPath: 'id' });
-                expensesStore.createIndex('date', 'date', { unique: false });
-                expensesStore.createIndex('category', 'category', { unique: false });
-            }
-
-            // Users store
-            if (!db.objectStoreNames.contains('users')) {
-                const usersStore = db.createObjectStore('users', { keyPath: 'id' });
-                usersStore.createIndex('username', 'username', { unique: true });
-                usersStore.createIndex('role', 'role', { unique: false });
-            }
-
-            // Discounts store (NEW)
-            if (!db.objectStoreNames.contains('discounts')) {
-                const discountsStore = db.createObjectStore('discounts', { keyPath: 'id' });
-                discountsStore.createIndex('active', 'active', { unique: false });
-                discountsStore.createIndex('type', 'type', { unique: false });
-                discountsStore.createIndex('validFrom', 'validFrom', { unique: false });
-                discountsStore.createIndex('validTo', 'validTo', { unique: false });
-            }
-
-            // Customers store (NEW)
-            if (!db.objectStoreNames.contains('customers')) {
-                const customersStore = db.createObjectStore('customers', { keyPath: 'id' });
-                customersStore.createIndex('name', 'name', { unique: false });
-                customersStore.createIndex('phone', 'phone', { unique: false });
-            }
-
-            // Debts store (NEW)
-            if (!db.objectStoreNames.contains('debts')) {
-                const debtsStore = db.createObjectStore('debts', { keyPath: 'id' });
-                debtsStore.createIndex('customerId', 'customerId', { unique: false });
-                debtsStore.createIndex('status', 'status', { unique: false });
-                debtsStore.createIndex('dueDate', 'dueDate', { unique: false });
-                debtsStore.createIndex('createdAt', 'createdAt', { unique: false });
-            }
-
-            // Activity Logs store (NEW - Version 4)
-            if (!db.objectStoreNames.contains('activityLogs')) {
-                const logsStore = db.createObjectStore('activityLogs', { keyPath: 'id' });
-                logsStore.createIndex('userId', 'userId', { unique: false });
-                logsStore.createIndex('module', 'module', { unique: false });
-                logsStore.createIndex('action', 'action', { unique: false });
-                logsStore.createIndex('timestamp', 'timestamp', { unique: false });
-            }
-
-            console.log('Database setup complete - Version', DB_VERSION);
-        };
-    });
+    console.log('[DB] Using Supabase cloud database only.');
+    return Promise.resolve();
 }
 
-// ===== PRODUCTS CRUD =====
+// ============================================================
+// ===== PRODUCTS =====
+// ============================================================
 
-/**
- * Add a new product
- * @param {Object} product - Product object
- * @returns {Promise} Promise that resolves with the product ID
- */
-function addProduct(product) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['products'], 'readwrite');
-        const store = transaction.objectStore('products');
-
-        const productData = {
-            id: generateId(),
+async function addProduct(product) {
+    const id = generateId();
+    const { data, error } = await supabase
+        .from('products')
+        .insert([{
+            id,
             name: product.name,
-            category: product.category,
+            category: product.category || 'lainnya',
             price: parseFloat(product.price),
             stock: parseInt(product.stock),
-            createdAt: new Date().toISOString()
-        };
-
-        const request = store.add(productData);
-
-        request.onsuccess = () => resolve(productData.id);
-        request.onerror = () => reject(request.error);
-    });
+            barcode: product.barcode || null,
+            created_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+    if (error) throw error;
+    console.log('[DB] Product added:', data.id);
+    return data.id;
 }
 
-/**
- * Get all products
- * @returns {Promise} Promise that resolves with array of products
- */
-function getAllProducts() {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['products'], 'readonly');
-        const store = transaction.objectStore('products');
-        const request = store.getAll();
-
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
+async function getAllProducts() {
+    const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('name');
+    if (error) throw error;
+    return data.map(p => ({ ...p, createdAt: p.created_at, updatedAt: p.updated_at }));
 }
 
-/**
- * Get product by ID
- * @param {string} id - Product ID
- * @returns {Promise} Promise that resolves with product object
- */
-function getProduct(id) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['products'], 'readonly');
-        const store = transaction.objectStore('products');
-        const request = store.get(id);
-
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
+async function getProduct(id) {
+    const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', id)
+        .single();
+    if (error) { if (error.code === 'PGRST116') return null; throw error; }
+    return { ...data, createdAt: data.created_at, updatedAt: data.updated_at };
 }
 
-/**
- * Update product
- * @param {string} id - Product ID
- * @param {Object} updates - Object with fields to update
- * @returns {Promise} Promise that resolves when update is complete
- */
-function updateProduct(id, updates) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['products'], 'readwrite');
-        const store = transaction.objectStore('products');
-
-        const getRequest = store.get(id);
-
-        getRequest.onsuccess = () => {
-            const product = getRequest.result;
-
-            if (!product) {
-                reject(new Error('Product not found'));
-                return;
-            }
-
-            // Update fields
-            Object.keys(updates).forEach(key => {
-                if (key === 'price' || key === 'stock') {
-                    product[key] = parseFloat(updates[key]);
-                } else {
-                    product[key] = updates[key];
-                }
-            });
-
-            product.updatedAt = new Date().toISOString();
-
-            const updateRequest = store.put(product);
-            updateRequest.onsuccess = () => resolve();
-            updateRequest.onerror = () => reject(updateRequest.error);
-        };
-
-        getRequest.onerror = () => reject(getRequest.error);
-    });
+async function updateProduct(id, updates) {
+    const payload = { ...updates, updated_at: new Date().toISOString() };
+    delete payload.createdAt;
+    delete payload.updatedAt;
+    delete payload.created_at;
+    const { error } = await supabase.from('products').update(payload).eq('id', id);
+    if (error) throw error;
 }
 
-/**
- * Delete product
- * @param {string} id - Product ID
- * @returns {Promise} Promise that resolves when deletion is complete
- */
-function deleteProduct(id) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['products'], 'readwrite');
-        const store = transaction.objectStore('products');
-        const request = store.delete(id);
-
-        request.onsuccess = () => resolve();
-        request.onerror = () => reject(request.error);
-    });
+async function deleteProduct(id) {
+    const { error } = await supabase.from('products').delete().eq('id', id);
+    if (error) throw error;
 }
 
-/**
- * Update product stock
- * @param {string} id - Product ID
- * @param {number} quantity - Quantity to add (negative to subtract)
- * @returns {Promise} Promise that resolves when update is complete
- */
-function updateStock(id, quantity) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['products'], 'readwrite');
-        const store = transaction.objectStore('products');
+async function updateStock(id, quantityChange) {
+    const { data: product, error: fetchError } = await supabase
+        .from('products')
+        .select('stock')
+        .eq('id', id)
+        .single();
+    if (fetchError) throw fetchError;
 
-        const getRequest = store.get(id);
+    const newStock = product.stock + quantityChange;
+    if (newStock < 0) throw new Error('Stok tidak mencukupi');
 
-        getRequest.onsuccess = () => {
-            const product = getRequest.result;
-
-            if (!product) {
-                reject(new Error('Product not found'));
-                return;
-            }
-
-            product.stock += quantity;
-
-            if (product.stock < 0) {
-                reject(new Error('Insufficient stock'));
-                return;
-            }
-
-            const updateRequest = store.put(product);
-            updateRequest.onsuccess = () => resolve(product.stock);
-            updateRequest.onerror = () => reject(updateRequest.error);
-        };
-
-        getRequest.onerror = () => reject(getRequest.error);
-    });
+    const { error } = await supabase
+        .from('products')
+        .update({ stock: newStock, updated_at: new Date().toISOString() })
+        .eq('id', id);
+    if (error) throw error;
+    return newStock;
 }
 
-// ===== TRANSACTIONS CRUD =====
+async function getProductByBarcode(barcode) {
+    const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('barcode', barcode)
+        .maybeSingle();
+    if (error) throw error;
+    return data ? { ...data, createdAt: data.created_at } : null;
+}
 
-/**
- * Add a new transaction
- * @param {Object} transaction - Transaction object
- * @returns {Promise} Promise that resolves with the transaction ID
- */
-function addTransaction(transactionData) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['transactions'], 'readwrite');
-        const store = transaction.objectStore('transactions');
+// ============================================================
+// ===== TRANSACTIONS =====
+// ============================================================
 
-        const data = {
-            id: generateId(),
-            date: new Date().toISOString(),
+async function addTransaction(transactionData) {
+    const id = generateId();
+    const { data, error } = await supabase
+        .from('transactions')
+        .insert([{
+            id,
+            created_at: new Date().toISOString(),
             items: transactionData.items,
+            subtotal: transactionData.subtotal || 0,
+            discount: transactionData.discount || 0,
             total: transactionData.total,
-            paymentMethod: transactionData.paymentMethod
-        };
-
-        const request = store.add(data);
-
-        request.onsuccess = () => resolve(data.id);
-        request.onerror = () => reject(request.error);
-    });
+            payment_method: transactionData.paymentMethod,
+            customer_name: transactionData.customerName || null
+        }])
+        .select()
+        .single();
+    if (error) throw error;
+    console.log('[DB] Transaction added:', data.id);
+    return data.id;
 }
 
-/**
- * Get all transactions
- * @param {Object} filter - Optional filter object with from/to dates
- * @returns {Promise} Promise that resolves with array of transactions
- */
-function getAllTransactions(filter = null) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['transactions'], 'readonly');
-        const store = transaction.objectStore('transactions');
-        const request = store.getAll();
+async function getAllTransactions(filter = null) {
+    let query = supabase.from('transactions').select('*');
 
-        request.onsuccess = () => {
-            let transactions = request.result;
+    if (filter && filter.from && filter.to) {
+        query = query
+            .gte('created_at', filter.from.toISOString())
+            .lt('created_at', filter.to.toISOString());
+    }
 
-            // Apply date filter if provided
-            if (filter && filter.from && filter.to) {
-                transactions = transactions.filter(t => {
-                    const tDate = new Date(t.date);
-                    return tDate >= filter.from && tDate < filter.to;
-                });
-            }
+    const { data, error } = await query.order('created_at', { ascending: false });
+    if (error) throw error;
 
-            // Sort by date descending
-            transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-            resolve(transactions);
-        };
-        request.onerror = () => reject(request.error);
-    });
+    return data.map(t => ({
+        ...t,
+        date: t.created_at,
+        paymentMethod: t.payment_method,
+        customerName: t.customer_name
+    }));
 }
 
-/**
- * Get transaction by ID
- * @param {string} id - Transaction ID
- * @returns {Promise} Promise that resolves with transaction object
- */
-function getTransaction(id) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['transactions'], 'readonly');
-        const store = transaction.objectStore('transactions');
-        const request = store.get(id);
-
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
+async function getTransaction(id) {
+    const { data, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('id', id)
+        .single();
+    if (error) { if (error.code === 'PGRST116') return null; throw error; }
+    return {
+        ...data,
+        date: data.created_at,
+        paymentMethod: data.payment_method,
+        customerName: data.customer_name
+    };
 }
 
-// ===== EXPENSES CRUD =====
+// ============================================================
+// ===== EXPENSES =====
+// ============================================================
 
-/**
- * Add a new expense
- * @param {Object} expense - Expense object
- * @returns {Promise} Promise that resolves with the expense ID
- */
-function addExpense(expense) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['expenses'], 'readwrite');
-        const store = transaction.objectStore('expenses');
-
-        const data = {
-            id: generateId(),
-            date: expense.date || new Date().toISOString(),
-            description: expense.description,
+async function addExpense(expense) {
+    const id = generateId();
+    const { data, error } = await supabase
+        .from('expenses')
+        .insert([{
+            id,
+            date: expense.date || new Date().toISOString().split('T')[0],
+            description: expense.description || null,
             amount: parseFloat(expense.amount),
-            category: expense.category
-        };
-
-        const request = store.add(data);
-
-        request.onsuccess = () => resolve(data.id);
-        request.onerror = () => reject(request.error);
-    });
+            category: expense.category || 'lainnya',
+            created_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+    if (error) throw error;
+    return data.id;
 }
 
-/**
- * Get all expenses
- * @param {Object} filter - Optional filter object with from/to dates
- * @returns {Promise} Promise that resolves with array of expenses
- */
-function getAllExpenses(filter = null) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['expenses'], 'readonly');
-        const store = transaction.objectStore('expenses');
-        const request = store.getAll();
+async function getAllExpenses(filter = null) {
+    let query = supabase.from('expenses').select('*');
 
-        request.onsuccess = () => {
-            let expenses = request.result;
+    if (filter && filter.from && filter.to) {
+        const fromDate = filter.from.toISOString().split('T')[0];
+        const toDate = filter.to.toISOString().split('T')[0];
+        query = query.gte('date', fromDate).lt('date', toDate);
+    }
 
-            // Apply date filter if provided
-            if (filter && filter.from && filter.to) {
-                expenses = expenses.filter(e => {
-                    const eDate = new Date(e.date);
-                    return eDate >= filter.from && eDate < filter.to;
-                });
-            }
-
-            resolve(expenses);
-        };
-        request.onerror = () => reject(request.error);
-    });
+    const { data, error } = await query.order('date', { ascending: false });
+    if (error) throw error;
+    return data;
 }
 
-// ===== USERS CRUD =====
+async function deleteExpense(id) {
+    const { error } = await supabase.from('expenses').delete().eq('id', id);
+    if (error) throw error;
+}
 
-/**
- * Add a new user
- * @param {Object} user - User object
- * @returns {Promise} Promise that resolves with the user ID
- */
-function addUser(user) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['users'], 'readwrite');
-        const store = transaction.objectStore('users');
+// ============================================================
+// ===== USERS =====
+// ============================================================
 
-        const userData = {
-            id: generateId(),
+async function addUser(user) {
+    const id = generateId();
+    const { data, error } = await supabase
+        .from('users')
+        .insert([{
+            id,
             username: user.username,
-            password: user.password, // In production, this should be hashed
-            role: user.role, // 'admin' or 'kasir'
+            password: user.password,
+            role: user.role || 'kasir',
             name: user.name,
-            createdAt: new Date().toISOString()
-        };
-
-        const request = store.add(userData);
-
-        request.onsuccess = () => resolve(userData.id);
-        request.onerror = () => reject(request.error);
-    });
+            created_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+    if (error) throw error;
+    return data.id;
 }
 
-/**
- * Get user by username
- * @param {string} username - Username
- * @returns {Promise} Promise that resolves with user object
- */
-function getUserByUsername(username) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['users'], 'readonly');
-        const store = transaction.objectStore('users');
-        const index = store.index('username');
-        const request = index.get(username);
-
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
+async function getAllUsers() {
+    const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .order('name');
+    if (error) throw error;
+    return data.map(u => ({ ...u, createdAt: u.created_at }));
 }
 
-/**
- * Get all users
- * @returns {Promise} Promise that resolves with array of users
- */
-function getAllUsers() {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['users'], 'readonly');
-        const store = transaction.objectStore('users');
-        const request = store.getAll();
-
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
+async function getUserByUsername(username) {
+    const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('username', username)
+        .maybeSingle();
+    if (error) throw error;
+    return data ? { ...data, createdAt: data.created_at } : null;
 }
 
-/**
- * Update user
- * @param {string} id - User ID
- * @param {Object} updates - Object with fields to update
- * @returns {Promise} Promise that resolves when update is complete
- */
-function updateUser(id, updates) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['users'], 'readwrite');
-        const store = transaction.objectStore('users');
-
-        const getRequest = store.get(id);
-
-        getRequest.onsuccess = () => {
-            const user = getRequest.result;
-
-            if (!user) {
-                reject(new Error('User not found'));
-                return;
-            }
-
-            // Update fields
-            Object.keys(updates).forEach(key => {
-                user[key] = updates[key];
-            });
-
-            user.updatedAt = new Date().toISOString();
-
-            const updateRequest = store.put(user);
-            updateRequest.onsuccess = () => resolve();
-            updateRequest.onerror = () => reject(updateRequest.error);
-        };
-
-        getRequest.onerror = () => reject(getRequest.error);
-    });
+async function getUser(id) {
+    const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', id)
+        .single();
+    if (error) { if (error.code === 'PGRST116') return null; throw error; }
+    return { ...data, createdAt: data.created_at };
 }
 
-/**
- * Delete user
- * @param {string} id - User ID
- * @returns {Promise} Promise that resolves when deletion is complete
- */
-function deleteUser(id) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['users'], 'readwrite');
-        const store = transaction.objectStore('users');
-        const request = store.delete(id);
-
-        request.onsuccess = () => resolve();
-        request.onerror = () => reject(request.error);
-    });
+async function updateUser(id, updates) {
+    const payload = { ...updates, updated_at: new Date().toISOString() };
+    delete payload.createdAt;
+    delete payload.updatedAt;
+    delete payload.created_at;
+    const { error } = await supabase.from('users').update(payload).eq('id', id);
+    if (error) throw error;
 }
 
-/**
- * Seed default users (admin and kasir)
- * @returns {Promise} Promise that resolves when seeding is complete
- */
+async function deleteUser(id) {
+    const { error } = await supabase.from('users').delete().eq('id', id);
+    if (error) throw error;
+}
+
 async function seedDefaultUsers() {
     try {
         const users = await getAllUsers();
-
-        // Only seed if no users exist
         if (users.length === 0) {
-            await addUser({
-                username: 'admin',
-                password: 'admin123',
-                role: 'admin',
-                name: 'Administrator'
-            });
-
-            await addUser({
-                username: 'kasir',
-                password: 'kasir123',
-                role: 'kasir',
-                name: 'Kasir'
-            });
-
-            console.log('Default users seeded successfully');
+            await addUser({ username: 'admin', password: 'admin123', role: 'admin', name: 'Administrator' });
+            await addUser({ username: 'kasir', password: 'kasir123', role: 'kasir', name: 'Kasir' });
+            console.log('[DB] Default users seeded.');
         }
     } catch (error) {
-        console.error('Error seeding default users:', error);
+        console.error('[DB] Error seeding users:', error);
     }
 }
 
-// ===== DISCOUNTS CRUD =====
+// ============================================================
+// ===== DISCOUNTS =====
+// ============================================================
 
-/**
- * Add a new discount
- * @param {Object} discount - Discount object
- * @returns {Promise} Promise that resolves with the discount ID
- */
-function addDiscount(discount) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['discounts'], 'readwrite');
-        const store = transaction.objectStore('discounts');
-
-        const discountData = {
-            id: generateId(),
+async function addDiscount(discount) {
+    const id = generateId();
+    const { data, error } = await supabase
+        .from('discounts')
+        .insert([{
+            id,
             name: discount.name,
-            type: discount.type, // 'percentage' or 'fixed'
+            type: discount.type || 'percentage',
             value: parseFloat(discount.value),
-            applicableTo: discount.applicableTo || 'all', // 'all', 'product', 'category'
-            productIds: discount.productIds || [],
-            categoryIds: discount.categoryIds || [],
-            validFrom: discount.validFrom || new Date().toISOString(),
-            validTo: discount.validTo || null,
+            applicable_to: discount.applicableTo || 'all',
+            product_ids: discount.productIds || [],
+            category_ids: discount.categoryIds || [],
+            valid_from: discount.validFrom || new Date().toISOString(),
+            valid_to: discount.validTo || null,
             active: discount.active !== false,
-            createdAt: new Date().toISOString()
-        };
+            created_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+    if (error) throw error;
+    return data.id;
+}
 
-        const request = store.add(discountData);
+async function getAllDiscounts() {
+    const { data, error } = await supabase
+        .from('discounts')
+        .select('*')
+        .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data.map(d => ({
+        ...d,
+        applicableTo: d.applicable_to,
+        productIds: d.product_ids || [],
+        categoryIds: d.category_ids || [],
+        validFrom: d.valid_from,
+        validTo: d.valid_to,
+        createdAt: d.created_at
+    }));
+}
 
-        request.onsuccess = () => resolve(discountData.id);
-        request.onerror = () => reject(request.error);
+async function getActiveDiscounts() {
+    const all = await getAllDiscounts();
+    const now = new Date();
+    return all.filter(d => {
+        if (!d.active) return false;
+        if (d.validFrom && new Date(d.validFrom) > now) return false;
+        if (d.validTo && new Date(d.validTo) < now) return false;
+        return true;
     });
 }
 
-/**
- * Get all discounts
- * @returns {Promise} Promise that resolves with array of discounts
- */
-function getAllDiscounts() {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['discounts'], 'readonly');
-        const store = transaction.objectStore('discounts');
-        const request = store.getAll();
+async function calculateProductDiscount(item, quantity) {
+    const discounts = await getActiveDiscounts();
+    let best = 0;
 
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
+    for (const d of discounts) {
+        const isForAll = d.applicableTo === 'all';
+        const isForProduct = d.applicableTo === 'product' && (d.productIds || []).includes(item.id);
+        const isForCat = d.applicableTo === 'category' && (d.categoryIds || []).includes(item.category);
+
+        if (!isForAll && !isForProduct && !isForCat) continue;
+
+        const subtotal = item.price * quantity;
+        const amount = d.type === 'percentage'
+            ? (subtotal * d.value / 100)
+            : d.value;
+        if (amount > best) best = amount;
+    }
+    return best;
 }
 
-/**
- * Get active discounts
- * @returns {Promise} Promise that resolves with array of active discounts
- */
-function getActiveDiscounts() {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['discounts'], 'readonly');
-        const store = transaction.objectStore('discounts');
-        const request = store.getAll();
+async function updateDiscount(id, updates) {
+    const payload = { ...updates, updated_at: new Date().toISOString() };
+    // camelCase → snake_case
+    if (payload.applicableTo !== undefined) { payload.applicable_to = payload.applicableTo; delete payload.applicableTo; }
+    if (payload.productIds !== undefined) { payload.product_ids = payload.productIds; delete payload.productIds; }
+    if (payload.categoryIds !== undefined) { payload.category_ids = payload.categoryIds; delete payload.categoryIds; }
+    if (payload.validFrom !== undefined) { payload.valid_from = payload.validFrom; delete payload.validFrom; }
+    if (payload.validTo !== undefined) { payload.valid_to = payload.validTo; delete payload.validTo; }
+    delete payload.createdAt;
+    delete payload.created_at;
 
-        request.onsuccess = () => {
-            const now = new Date();
-            const activeDiscounts = request.result.filter(d => {
-                if (!d.active) return false;
-                if (d.validFrom && new Date(d.validFrom) > now) return false;
-                if (d.validTo && new Date(d.validTo) < now) return false;
-                return true;
-            });
-            resolve(activeDiscounts);
-        };
-        request.onerror = () => reject(request.error);
-    });
+    const { error } = await supabase.from('discounts').update(payload).eq('id', id);
+    if (error) throw error;
 }
 
-/**
- * Update discount
- * @param {string} id - Discount ID
- * @param {Object} updates - Object with fields to update
- * @returns {Promise} Promise that resolves when update is complete
- */
-function updateDiscount(id, updates) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['discounts'], 'readwrite');
-        const store = transaction.objectStore('discounts');
-
-        const getRequest = store.get(id);
-
-        getRequest.onsuccess = () => {
-            const discount = getRequest.result;
-
-            if (!discount) {
-                reject(new Error('Discount not found'));
-                return;
-            }
-
-            Object.keys(updates).forEach(key => {
-                if (key === 'value') {
-                    discount[key] = parseFloat(updates[key]);
-                } else {
-                    discount[key] = updates[key];
-                }
-            });
-
-            discount.updatedAt = new Date().toISOString();
-
-            const updateRequest = store.put(discount);
-            updateRequest.onsuccess = () => resolve();
-            updateRequest.onerror = () => reject(updateRequest.error);
-        };
-
-        getRequest.onerror = () => reject(getRequest.error);
-    });
+async function deleteDiscount(id) {
+    const { error } = await supabase.from('discounts').delete().eq('id', id);
+    if (error) throw error;
 }
 
-/**
- * Delete discount
- * @param {string} id - Discount ID
- * @returns {Promise} Promise that resolves when deletion is complete
- */
-function deleteDiscount(id) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['discounts'], 'readwrite');
-        const store = transaction.objectStore('discounts');
-        const request = store.delete(id);
+// ============================================================
+// ===== CUSTOMERS =====
+// ============================================================
 
-        request.onsuccess = () => resolve();
-        request.onerror = () => reject(request.error);
-    });
-}
-
-// ===== CUSTOMERS CRUD =====
-
-/**
- * Add a new customer
- * @param {Object} customer - Customer object
- * @returns {Promise} Promise that resolves with the customer ID
- */
-function addCustomer(customer) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['customers'], 'readwrite');
-        const store = transaction.objectStore('customers');
-
-        const customerData = {
-            id: generateId(),
+async function addCustomer(customer) {
+    const id = generateId();
+    const { data, error } = await supabase
+        .from('customers')
+        .insert([{
+            id,
             name: customer.name,
             phone: customer.phone || '',
             address: customer.address || '',
-            totalDebt: 0,
-            createdAt: new Date().toISOString()
-        };
-
-        const request = store.add(customerData);
-
-        request.onsuccess = () => resolve(customerData.id);
-        request.onerror = () => reject(request.error);
-    });
+            total_debt: 0,
+            created_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+    if (error) throw error;
+    return data.id;
 }
 
-/**
- * Get all customers
- * @returns {Promise} Promise that resolves with array of customers
- */
-function getAllCustomers() {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['customers'], 'readonly');
-        const store = transaction.objectStore('customers');
-        const request = store.getAll();
-
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
+async function getAllCustomers() {
+    const { data, error } = await supabase
+        .from('customers')
+        .select('*')
+        .order('name');
+    if (error) throw error;
+    return data.map(c => ({
+        ...c,
+        totalDebt: c.total_debt || 0,
+        createdAt: c.created_at
+    }));
 }
 
-/**
- * Get customer by ID
- * @param {string} id - Customer ID
- * @returns {Promise} Promise that resolves with customer object
- */
-function getCustomer(id) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['customers'], 'readonly');
-        const store = transaction.objectStore('customers');
-        const request = store.get(id);
-
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
+async function getCustomer(id) {
+    const { data, error } = await supabase
+        .from('customers')
+        .select('*')
+        .eq('id', id)
+        .single();
+    if (error) { if (error.code === 'PGRST116') return null; throw error; }
+    return { ...data, totalDebt: data.total_debt || 0, createdAt: data.created_at };
 }
 
-/**
- * Update customer
- * @param {string} id - Customer ID
- * @param {Object} updates - Object with fields to update
- * @returns {Promise} Promise that resolves when update is complete
- */
-function updateCustomer(id, updates) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['customers'], 'readwrite');
-        const store = transaction.objectStore('customers');
-
-        const getRequest = store.get(id);
-
-        getRequest.onsuccess = () => {
-            const customer = getRequest.result;
-
-            if (!customer) {
-                reject(new Error('Customer not found'));
-                return;
-            }
-
-            Object.keys(updates).forEach(key => {
-                customer[key] = updates[key];
-            });
-
-            customer.updatedAt = new Date().toISOString();
-
-            const updateRequest = store.put(customer);
-            updateRequest.onsuccess = () => resolve();
-            updateRequest.onerror = () => reject(updateRequest.error);
-        };
-
-        getRequest.onerror = () => reject(getRequest.error);
-    });
+async function updateCustomer(id, updates) {
+    const payload = { ...updates, updated_at: new Date().toISOString() };
+    if (payload.totalDebt !== undefined) { payload.total_debt = payload.totalDebt; delete payload.totalDebt; }
+    delete payload.createdAt;
+    delete payload.created_at;
+    const { error } = await supabase.from('customers').update(payload).eq('id', id);
+    if (error) throw error;
 }
 
-/**
- * Delete customer
- * @param {string} id - Customer ID
- * @returns {Promise} Promise that resolves when deletion is complete
- */
-function deleteCustomer(id) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['customers'], 'readwrite');
-        const store = transaction.objectStore('customers');
-        const request = store.delete(id);
-
-        request.onsuccess = () => resolve();
-        request.onerror = () => reject(request.error);
-    });
+async function deleteCustomer(id) {
+    const { error } = await supabase.from('customers').delete().eq('id', id);
+    if (error) throw error;
 }
 
-// ===== DEBTS CRUD =====
+// ============================================================
+// ===== DEBTS =====
+// ============================================================
 
-/**
- * Add a new debt
- * @param {Object} debt - Debt object
- * @returns {Promise} Promise that resolves with the debt ID
- */
-function addDebt(debt) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['debts'], 'readwrite');
-        const store = transaction.objectStore('debts');
-
-        const debtData = {
-            id: generateId(),
-            customerId: debt.customerId,
-            customerName: debt.customerName,
-            transactionId: debt.transactionId || null,
-            amount: parseFloat(debt.amount),
+async function addDebt(debt) {
+    const id = generateId();
+    const amount = parseFloat(debt.amount);
+    const { data, error } = await supabase
+        .from('debts')
+        .insert([{
+            id,
+            customer_id: debt.customerId || null,
+            customer_name: debt.customerName || null,
+            transaction_id: debt.transactionId || null,
+            amount,
             paid: 0,
-            remaining: parseFloat(debt.amount),
-            dueDate: debt.dueDate || null,
+            remaining: amount,
+            due_date: debt.dueDate || null,
             status: 'pending',
             payments: [],
             notes: debt.notes || '',
-            createdAt: new Date().toISOString()
-        };
-
-        const request = store.add(debtData);
-
-        request.onsuccess = () => resolve(debtData.id);
-        request.onerror = () => reject(request.error);
-    });
+            created_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+    if (error) throw error;
+    return data.id;
 }
 
-/**
- * Get all debts
- * @param {string} filter - Optional filter: 'pending', 'partial', 'paid', 'overdue'
- * @returns {Promise} Promise that resolves with array of debts
- */
-function getAllDebts(filter = null) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['debts'], 'readonly');
-        const store = transaction.objectStore('debts');
-        const request = store.getAll();
-
-        request.onsuccess = () => {
-            let debts = request.result;
-
-            if (filter) {
-                debts = debts.filter(d => d.status === filter);
-            }
-
-            // Sort by created date descending
-            debts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-            resolve(debts);
-        };
-        request.onerror = () => reject(request.error);
-    });
+async function getAllDebts(filter = null) {
+    let query = supabase.from('debts').select('*');
+    if (filter) query = query.eq('status', filter);
+    const { data, error } = await query.order('created_at', { ascending: false });
+    if (error) throw error;
+    return data.map(_mapDebt);
 }
 
-/**
- * Get debts by customer ID
- * @param {string} customerId - Customer ID
- * @returns {Promise} Promise that resolves with array of debts
- */
-function getDebtsByCustomer(customerId) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['debts'], 'readonly');
-        const store = transaction.objectStore('debts');
-        const index = store.index('customerId');
-        const request = index.getAll(customerId);
-
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
+async function getDebt(id) {
+    const { data, error } = await supabase
+        .from('debts')
+        .select('*')
+        .eq('id', id)
+        .single();
+    if (error) { if (error.code === 'PGRST116') return null; throw error; }
+    return _mapDebt(data);
 }
 
-/**
- * Get debt by ID
- * @param {string} id - Debt ID
- * @returns {Promise} Promise that resolves with debt object
- */
-function getDebt(id) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['debts'], 'readonly');
-        const store = transaction.objectStore('debts');
-        const request = store.get(id);
-
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
+async function getDebtsByCustomer(customerId) {
+    const { data, error } = await supabase
+        .from('debts')
+        .select('*')
+        .eq('customer_id', customerId)
+        .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data.map(_mapDebt);
 }
 
-/**
- * Record payment for a debt
- * @param {string} debtId - Debt ID
- * @param {Object} payment - Payment object {amount, method, date}
- * @returns {Promise} Promise that resolves when payment is recorded
- */
-function recordDebtPayment(debtId, payment) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['debts'], 'readwrite');
-        const store = transaction.objectStore('debts');
-
-        const getRequest = store.get(debtId);
-
-        getRequest.onsuccess = () => {
-            const debt = getRequest.result;
-
-            if (!debt) {
-                reject(new Error('Debt not found'));
-                return;
-            }
-
-            const paymentAmount = parseFloat(payment.amount);
-            debt.paid += paymentAmount;
-            debt.remaining = debt.amount - debt.paid;
-
-            // Update status
-            if (debt.remaining <= 0) {
-                debt.status = 'paid';
-                debt.remaining = 0;
-            } else if (debt.paid > 0) {
-                debt.status = 'partial';
-            }
-
-            // Add payment record
-            debt.payments.push({
-                date: payment.date || new Date().toISOString(),
-                amount: paymentAmount,
-                method: payment.method || 'tunai'
-            });
-
-            debt.updatedAt = new Date().toISOString();
-
-            const updateRequest = store.put(debt);
-            updateRequest.onsuccess = () => resolve(debt);
-            updateRequest.onerror = () => reject(updateRequest.error);
-        };
-
-        getRequest.onerror = () => reject(getRequest.error);
-    });
+function _mapDebt(d) {
+    return {
+        ...d,
+        customerId: d.customer_id || d.customerId,
+        customerName: d.customer_name || d.customerName,
+        transactionId: d.transaction_id || d.transactionId,
+        dueDate: d.due_date || d.dueDate,
+        createdAt: d.created_at,
+        payments: d.payments || []
+    };
 }
 
-/**
- * Update debt status (check for overdue)
- * @param {string} id - Debt ID
- * @returns {Promise} Promise that resolves when update is complete
- */
-function updateDebtStatus(id) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['debts'], 'readwrite');
-        const store = transaction.objectStore('debts');
-
-        const getRequest = store.get(id);
-
-        getRequest.onsuccess = () => {
-            const debt = getRequest.result;
-
-            if (!debt) {
-                reject(new Error('Debt not found'));
-                return;
-            }
-
-            // Check if overdue
-            if (debt.status !== 'paid' && debt.dueDate) {
-                const now = new Date();
-                const dueDate = new Date(debt.dueDate);
-                if (dueDate < now) {
-                    debt.status = 'overdue';
-                }
-            }
-
-            const updateRequest = store.put(debt);
-            updateRequest.onsuccess = () => resolve();
-            updateRequest.onerror = () => reject(updateRequest.error);
-        };
-
-        getRequest.onerror = () => reject(getRequest.error);
-    });
+async function updateDebt(id, updates) {
+    const payload = { ...updates, updated_at: new Date().toISOString() };
+    if (payload.customerId !== undefined) { payload.customer_id = payload.customerId; delete payload.customerId; }
+    if (payload.customerName !== undefined) { payload.customer_name = payload.customerName; delete payload.customerName; }
+    if (payload.transactionId !== undefined) { payload.transaction_id = payload.transactionId; delete payload.transactionId; }
+    if (payload.dueDate !== undefined) { payload.due_date = payload.dueDate; delete payload.dueDate; }
+    delete payload.createdAt;
+    delete payload.created_at;
+    const { error } = await supabase.from('debts').update(payload).eq('id', id);
+    if (error) throw error;
 }
 
-/**
- * Delete debt
- * @param {string} id - Debt ID
- * @returns {Promise} Promise that resolves when deletion is complete
- */
-function deleteDebt(id) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['debts'], 'readwrite');
-        const store = transaction.objectStore('debts');
-        const request = store.delete(id);
+async function recordDebtPayment(debtId, payment) {
+    const debt = await getDebt(debtId);
+    if (!debt) throw new Error('Hutang tidak ditemukan');
 
-        request.onsuccess = () => resolve();
-        request.onerror = () => reject(request.error);
-    });
+    const paymentAmount = parseFloat(payment.amount);
+    const newPaid = (debt.paid || 0) + paymentAmount;
+    const newRemaining = debt.amount - newPaid;
+
+    let newStatus = debt.status;
+    if (newRemaining <= 0) newStatus = 'paid';
+    else if (newPaid > 0) newStatus = 'partial';
+
+    const newPayments = [
+        ...(debt.payments || []),
+        {
+            date: payment.date || new Date().toISOString(),
+            amount: paymentAmount,
+            method: payment.method || 'tunai',
+            notes: payment.notes || ''
+        }
+    ];
+
+    const { data, error } = await supabase
+        .from('debts')
+        .update({
+            paid: newPaid,
+            remaining: Math.max(0, newRemaining),
+            status: newStatus,
+            payments: newPayments,
+            updated_at: new Date().toISOString()
+        })
+        .eq('id', debtId)
+        .select()
+        .single();
+    if (error) throw error;
+    return _mapDebt(data);
 }
 
-// ===== BARCODE FUNCTIONS =====
-
-/**
- * Get product by barcode
- * @param {string} barcode - Barcode string
- * @returns {Promise} Promise that resolves with product object
- */
-function getProductByBarcode(barcode) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['products'], 'readonly');
-        const store = transaction.objectStore('products');
-        const index = store.index('barcode');
-        const request = index.get(barcode);
-
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
+async function updateDebtStatus(id) {
+    const debt = await getDebt(id);
+    if (!debt || debt.status === 'paid') return;
+    if (debt.dueDate && new Date(debt.dueDate) < new Date()) {
+        const { error } = await supabase
+            .from('debts')
+            .update({ status: 'overdue', updated_at: new Date().toISOString() })
+            .eq('id', id);
+        if (error) throw error;
+    }
 }
 
+async function deleteDebt(id) {
+    const { error } = await supabase.from('debts').delete().eq('id', id);
+    if (error) throw error;
+}

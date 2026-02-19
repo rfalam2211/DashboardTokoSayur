@@ -275,6 +275,8 @@
     </style>
     <!-- Password Hashing Library -->
     <script src="https://unpkg.com/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+    <!-- Supabase Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div class="login-container">
@@ -325,75 +327,52 @@
     </div>
 
     <script src="js/utils.js"></script>
+    <!-- Supabase must load BEFORE database.js -->
+    <script src="js/supabase.js"></script>
     <script src="js/database.js"></script>
     <script src="js/auth-v2.js"></script>
     <script>
-        // Initialize database and seed users
+                // Initialize Supabase and seed default users
         async function initLogin() {
             try {
-                await initDB();
-                console.log('Database initialized');
-
-                // Check existing users and their passwords
-                const users = await getAllUsers();
-                console.log('Existing users:', users.length);
-
-                if (users.length > 0) {
-                    // Check if passwords are hashed (legacy issue)
-                    const hasHashedPasswords = users.some(u =>
-                        u.password && (u.password.startsWith('$2a$') || u.password.startsWith('$2b$'))
-                    );
-
-                    if (hasHashedPasswords) {
-                        console.log('Found hashed passwords - resetting users...');
-                        // Delete all users and re-seed with plain passwords
-                        for (const user of users) {
-                            await deleteUser(user.id);
-                        }
-                        await seedDefaultUsers();
-                        console.log('Users reset with plain passwords');
-                    }
-                } else {
-                    await seedDefaultUsers();
+                // Init Supabase client
+                if (typeof initSupabase === 'function') {
+                    initSupabase();
                 }
 
-                // Log current user state for debugging
-                const currentUsers = await getAllUsers();
-                currentUsers.forEach(u => {
-                    console.log(`User: ${u.username}, Password type: ${u.password?.startsWith('$2') ? 'HASHED' : 'PLAIN'}`);
-                });
-                
+                // initDB is now a stub — no-op
+                await initDB();
+                console.log('[Login] Supabase ready');
+
+                // Seed admin & kasir jika belum ada
+                await seedDefaultUsers();
+
             } catch (error) {
-                console.error('Error initializing login:', error);
+                console.error('[Login] Init error:', error);
             }
         }
 
         // Handle login form submit
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            const username = document.getElementById('username').value;
+
+            const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
             const loginBtn = document.getElementById('login-btn');
-            const alert = document.getElementById('login-alert');
-            
-            // Disable button
+            const alertEl = document.getElementById('login-alert');
+
             loginBtn.disabled = true;
             loginBtn.textContent = 'Memproses...';
-            alert.classList.remove('show');
-            
+            alertEl.classList.remove('show');
+
             try {
                 const user = await login(username, password);
-                
                 if (user) {
-                    // Redirect to main app
                     window.location.href = 'index.html';
                 } else {
-                    // Show error
-                    alert.classList.add('show');
+                    alertEl.classList.add('show');
                     document.getElementById('username').classList.add('error');
                     document.getElementById('password').classList.add('error');
-                    
                     setTimeout(() => {
                         document.getElementById('username').classList.remove('error');
                         document.getElementById('password').classList.remove('error');
@@ -401,7 +380,7 @@
                 }
             } catch (error) {
                 console.error('Login error:', error);
-                alert.classList.add('show');
+                alertEl.classList.add('show');
             } finally {
                 loginBtn.disabled = false;
                 loginBtn.textContent = 'Masuk';
@@ -409,15 +388,13 @@
         });
 
         // Clear error on input
-        document.getElementById('username').addEventListener('input', () => {
-            document.getElementById('login-alert').classList.remove('show');
-        });
-        
-        document.getElementById('password').addEventListener('input', () => {
-            document.getElementById('login-alert').classList.remove('show');
+            ['username', 'password'].forEach(id => {
+                document.getElementById(id).addEventListener('input', () => {
+                    document.getElementById('login-alert').classList.remove('show');
+                });
         });
 
-        // Initialize on load
+            // Run on load
         initLogin();
     </script>
 </body>

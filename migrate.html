@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migrasi Data → Supabase | Ida Groceries</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green: #10b981;
+            --green-dark: #059669;
+            --blue: #3b82f6;
+            --red: #ef4444;
+            --yellow: #f59e0b;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-400: #9ca3af;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 720px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .header .icon {
+            width: 64px; height: 64px;
+            background: linear-gradient(135deg, var(--green), var(--blue));
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 2rem;
+        }
+        .header h1 { color: #fff; font-size: 1.75rem; font-weight: 700; }
+        .header p { color: var(--gray-400); margin-top: 0.5rem; font-size: 0.95rem; }
+
+        /* Card */
+        .card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.25rem;
+            backdrop-filter: blur(10px);
+        }
+        .card h2 {
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Status Summary */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .summary-item {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+        }
+        .summary-item .number {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+        .summary-item .label { color: var(--gray-400); font-size: 0.8rem; }
+        .num-local { color: var(--blue); }
+        .num-success { color: var(--green); }
+        .num-error { color: var(--red); }
+
+        /* Table progress list */
+        .table-list { display: flex; flex-direction: column; gap: 0.75rem; }
+        .table-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 0.875rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: border-color 0.3s;
+        }
+        .table-item.success { border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.05); }
+        .table-item.error { border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.05); }
+        .table-item.running { border-color: rgba(59,130,246,0.4); background: rgba(59,130,246,0.05); }
+        .table-item.skipped { border-color: rgba(156,163,175,0.3); background: rgba(156,163,175,0.03); }
+
+        .table-icon { font-size: 1.25rem; flex-shrink: 0; }
+        .table-info { flex: 1; }
+        .table-name { color: #fff; font-weight: 600; font-size: 0.9rem; }
+        .table-detail { color: var(--gray-400); font-size: 0.8rem; margin-top: 0.2rem; }
+        .table-status { flex-shrink: 0; }
+
+        .badge {
+            padding: 0.25rem 0.625rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-waiting { background: rgba(156,163,175,0.15); color: var(--gray-400); }
+        .badge-running { background: rgba(59,130,246,0.2); color: #93c5fd; }
+        .badge-success { background: rgba(16,185,129,0.2); color: #6ee7b7; }
+        .badge-error { background: rgba(239,68,68,0.2); color: #fca5a5; }
+        .badge-skip { background: rgba(245,158,11,0.15); color: #fcd34d; }
+
+        /* Progress bar */
+        .progress-wrap {
+            background: rgba(255,255,255,0.08);
+            border-radius: 999px;
+            height: 6px;
+            overflow: hidden;
+            margin-top: 0.75rem;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--green), var(--blue));
+            border-radius: 999px;
+            transition: width 0.4s ease;
+            width: 0%;
+        }
+
+        /* Log console */
+        .log-console {
+            background: #0a0f1a;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 1rem;
+            height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            line-height: 1.6;
+        }
+        .log-line { margin-bottom: 0.2rem; }
+        .log-line.info { color: #94a3b8; }
+        .log-line.success { color: #6ee7b7; }
+        .log-line.error { color: #fca5a5; }
+        .log-line.warn { color: #fcd34d; }
+        .log-line.heading { color: #93c5fd; font-weight: bold; }
+
+        /* Buttons */
+        .btn-wrap { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--green), var(--green-dark));
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(16,185,129,0.3);
+        }
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16,185,129,0.4);
+        }
+        .btn-secondary {
+            background: rgba(255,255,255,0.08);
+            color: var(--gray-400);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .btn-secondary:hover:not(:disabled) { background: rgba(255,255,255,0.12); color: #fff; }
+        .btn-danger {
+            background: rgba(239,68,68,0.15);
+            color: #fca5a5;
+            border: 1px solid rgba(239,68,68,0.3);
+        }
+
+        /* Alert */
+        .alert {
+            display: none;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        .alert.show { display: flex; gap: 0.75rem; align-items: flex-start; }
+        .alert-warning { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: #fcd34d; }
+        .alert-success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; }
+        .alert-error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--gray-400);
+            text-decoration: none;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: #fff; }
+
+        @media (max-width: 480px) {
+            .summary-grid { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+            .summary-item .number { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <a href="index.html" class="back-link">
+        ← Kembali ke Aplikasi
+    </a>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="icon">🚀</div>
+        <h1>Migrasi Data ke Supabase</h1>
+        <p>Pindahkan semua data lokal (IndexedDB) ke cloud Supabase. Aman dijalankan berulang kali.</p>
+    </div>
+
+    <!-- Alert -->
+    <div class="alert alert-warning show" id="alert-warning">
+        <span>⚠️</span>
+        <div>
+            <strong>Sebelum memulai:</strong> Pastikan kamu terhubung internet dan tabel Supabase sudah dibuat menggunakan <code>supabase-schema.sql</code>.
+            Data lama di Supabase tidak akan tertimpa (menggunakan upsert).
+        </div>
+    </div>
+    <div class="alert alert-success" id="alert-success">
+        <span>✅</span>
+        <div id="alert-success-msg">Migrasi selesai!</div>
+    </div>
+    <div class="alert alert-error" id="alert-error">
+        <span>❌</span>
+        <div id="alert-error-msg">Terjadi kesalahan.</div>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-grid">
+        <div class="summary-item">
+            <div class="number num-local" id="count-local">–</div>
+            <div class="label">Total Lokal</div>
+        </div>
+        <div class="summary-item">
+            <div class="number num-success" id="count-success">0</div>
+            <div class="label">Berhasil</div>
+        </div>
+        <div class="summary-item">
+            <div class="number num-error" id="count-error">0</div>
+            <div class="label">Gagal</div>
+        </div>
+    </div>
+
+    <!-- Overall Progress -->
+    <div class="card">
+        <h2>📊 Progress Keseluruhan</h2>
+        <div class="progress-wrap">
+            <div class="progress-bar" id="overall-progress"></div>
+        </div>
+        <p style="color: var(--gray-400); font-size: 0.8rem; margin-top: 0.5rem;" id="overall-label">Belum dimulai</p>
+    </div>
+
+    <!-- Per-table Status -->
+    <div class="card">
+        <h2>📋 Status Per Tabel</h2>
+        <div class="table-list" id="table-list">
+            <!-- Filled by JS -->
+        </div>
+    </div>
+
+    <!-- Log Console -->
+    <div class="card">
+        <h2>🖥️ Log Migrasi</h2>
+        <div class="log-console" id="log-console">
+            <div class="log-line info">Siap memulai migrasi...</div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="card">
+        <div class="btn-wrap">
+            <button class="btn btn-primary" id="btn-start" onclick="startMigration()">
+                🚀 Mulai Migrasi
+            </button>
+            <button class="btn btn-secondary" id="btn-scan" onclick="scanLocalData()">
+                🔍 Scan Data Lokal
+            </button>
+            <button class="btn btn-secondary" onclick="clearLog()">
+                🗑️ Bersihkan Log
+            </button>
+            <button class="btn btn-danger" onclick="window.location.href='index.html'">
+                ✖ Tutup
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/utils.js"></script>
+<script src="js/supabase.js"></script>
+<script src="js/database.js"></script>
+
+<script>
+// ===== MIGRATION TOOL =====
+
+const SUPABASE_URL = 'https://rnpvfhllrmdwgoxpmapr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJucHZmaGxscm1kd2dveHBtYXByIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4MDk2MDUsImV4cCI6MjA4NDM4NTYwNX0.9-PufKDfndh6GTlvR756_n_92mVOOYuC0r3qbS4n3Nk';
+
+let sb = null;
+let isMigrating = false;
+let totalSuccess = 0;
+let totalError = 0;
+
+// Table definitions: IndexedDB name → Supabase table & mapper
+const TABLES = [
+    {
+        key: 'products',
+        icon: '📦',
+        label: 'Produk',
+        idbStore: 'products',
+        supabaseTable: 'products',
+        map: (r) => ({
+            id: r.id,
+            name: r.name,
+            category: r.category || 'lainnya',
+            price: parseFloat(r.price) || 0,
+            stock: parseInt(r.stock) || 0,
+            barcode: r.barcode || null,
+            created_at: r.createdAt || r.created_at || new Date().toISOString()
+        })
+    },
+    {
+        key: 'customers',
+        icon: '👤',
+        label: 'Pelanggan',
+        idbStore: 'customers',
+        supabaseTable: 'customers',
+        map: (r) => ({
+            id: r.id,
+            name: r.name,
+            phone: r.phone || null,
+            address: r.address || null,
+            created_at: r.createdAt || r.created_at || new Date().toISOString()
+        })
+    },
+    {
+        key: 'transactions',
+        icon: '🧾',
+        label: 'Transaksi',
+        idbStore: 'transactions',
+        supabaseTable: 'transactions',
+        map: (r) => ({
+            id: r.id,
+            items: r.items || [],
+            total: parseFloat(r.total) || 0,
+            payment_method: r.paymentMethod || r.payment_method || 'cash',
+            customer_name: r.customerName || r.customer_name || null,
+            created_at: r.date || r.created_at || new Date().toISOString()
+        })
+    },
+    {
+        key: 'debts',
+        icon: '💳',
+        label: 'Hutang',
+        idbStore: 'debts',
+        supabaseTable: 'debts',
+        map: (r) => ({
+            id: r.id,
+            customer_id: r.customerId || r.customer_id || null,
+            customer_name: r.customerName || r.customer_name || null,
+            transaction_id: r.transactionId || r.transaction_id || null,
+            amount: parseFloat(r.amount) || 0,
+            paid: parseFloat(r.paid) || 0,
+            remaining: parseFloat(r.remaining) || parseFloat(r.amount) || 0,
+            status: r.status || 'pending',
+            due_date: r.dueDate || r.due_date || null,
+            notes: r.notes || null,
+            payments: r.payments || [],
+            created_at: r.createdAt || r.created_at || new Date().toISOString()
+        })
+    },
+    {
+        key: 'expenses',
+        icon: '💰',
+        label: 'Pengeluaran',
+        idbStore: 'expenses',
+        supabaseTable: 'expenses',
+        map: (r) => ({
+            id: r.id,
+            date: r.date ? r.date.split('T')[0] : new Date().toISOString().split('T')[0],
+            description: r.description || null,
+            amount: parseFloat(r.amount) || 0,
+            category: r.category || 'lainnya',
+            created_at: r.createdAt || r.created_at || new Date().toISOString()
+        })
+    },
+    {
+        key: 'discounts',
+        icon: '🏷️',
+        label: 'Diskon',
+        idbStore: 'discounts',
+        supabaseTable: 'discounts',
+        map: (r) => ({
+            id: r.id,
+            name: r.name,
+            type: r.type || 'percentage',
+            value: parseFloat(r.value) || 0,
+            applicable_to: r.applicableTo || r.applicable_to || 'all',
+            active: r.active !== false,
+            valid_from: r.validFrom || r.valid_from || null,
+            valid_to: r.validTo || r.valid_to || null,
+            created_at: r.createdAt || r.created_at || new Date().toISOString()
+        })
+    },
+    {
+        key: 'users',
+        icon: '👥',
+        label: 'Pengguna',
+        idbStore: 'users',
+        supabaseTable: 'users',
+        map: (r) => ({
+            id: r.id,
+            username: r.username,
+            password: r.password,
+            name: r.name,
+            role: r.role || 'kasir',
+            created_at: r.createdAt || r.created_at || new Date().toISOString()
+        })
+    }
+];
+
+// ===== STATE =====
+let tableStates = {};
+TABLES.forEach(t => { tableStates[t.key] = { status: 'waiting', local: 0, migrated: 0, failed: 0 }; });
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', async () => {
+    // Init Supabase client directly (bypass supabase.js to avoid conflicts)
+    try {
+        sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        log('✓ Supabase client siap', 'success');
+    } catch (e) {
+        log('✗ Gagal inisialisasi Supabase: ' + e.message, 'error');
+    }
+
+    // Init IndexedDB
+    try {
+        await initDB();
+        log('✓ IndexedDB lokal terhubung', 'success');
+    } catch (e) {
+        log('✗ Gagal buka IndexedDB: ' + e.message, 'error');
+    }
+
+    renderTableList();
+    await scanLocalData();
+});
+
+// ===== RENDER TABLE LIST =====
+function renderTableList() {
+    const container = document.getElementById('table-list');
+    container.innerHTML = TABLES.map(t => {
+        const state = tableStates[t.key];
+        return `
+        <div class="table-item" id="row-${t.key}">
+            <div class="table-icon">${t.icon}</div>
+            <div class="table-info">
+                <div class="table-name">${t.label} <code style="font-size:0.7rem;color:#64748b">${t.supabaseTable}</code></div>
+                <div class="table-detail" id="detail-${t.key}">Lokal: – | Dimigrasikan: – | Gagal: –</div>
+            </div>
+            <div class="table-status">
+                <span class="badge badge-waiting" id="badge-${t.key}">Menunggu</span>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function updateRow(key, status, detail) {
+    const row = document.getElementById('row-' + key);
+    const badge = document.getElementById('badge-' + key);
+    const detailEl = document.getElementById('detail-' + key);
+    if (!row) return;
+
+    row.className = 'table-item ' + status;
+
+    const badgeMap = {
+        waiting: ['badge-waiting', 'Menunggu'],
+        running: ['badge-running', 'Proses...'],
+        success: ['badge-success', 'Selesai'],
+        error:   ['badge-error', 'Ada Error'],
+        skip:    ['badge-skip', 'Kosong'],
+    };
+    const [cls, text] = badgeMap[status] || ['badge-waiting', status];
+    badge.className = 'badge ' + cls;
+    badge.textContent = text;
+
+    if (detail) detailEl.textContent = detail;
+}
+
+// ===== SCAN LOCAL DATA =====
+async function scanLocalData() {
+    log('--- Scan data lokal ---', 'heading');
+    let total = 0;
+
+    for (const t of TABLES) {
+        try {
+            const data = await readFromIDB(t.idbStore);
+            tableStates[t.key].local = data.length;
+            total += data.length;
+            updateRow(t.key, 'waiting', `Lokal: ${data.length} record | Dimigrasikan: – | Gagal: –`);
+            log(`  ${t.icon} ${t.label}: ${data.length} record lokal`, data.length > 0 ? 'info' : 'warn');
+        } catch (e) {
+            log(`  ${t.icon} ${t.label}: error membaca – ${e.message}`, 'error');
+        }
+    }
+
+    document.getElementById('count-local').textContent = total;
+    log(`\nTotal: ${total} record ditemukan di lokal`, 'success');
+}
+
+// ===== MAIN MIGRATION =====
+async function startMigration() {
+    if (isMigrating) return;
+    if (!sb) {
+        showAlert('error', 'Supabase belum terhubung. Cek koneksi internet.');
+        return;
+    }
+    if (!navigator.onLine) {
+        showAlert('error', 'Tidak ada koneksi internet. Migrasi membutuhkan internet.');
+        return;
+    }
+
+    isMigrating = true;
+    totalSuccess = 0;
+    totalError = 0;
+
+    document.getElementById('btn-start').disabled = true;
+    document.getElementById('btn-scan').disabled = true;
+    document.getElementById('alert-warning').classList.remove('show');
+    document.getElementById('count-success').textContent = '0';
+    document.getElementById('count-error').textContent = '0';
+
+    log('', 'info');
+    log('════════════════════════════════════', 'heading');
+    log('  MULAI MIGRASI DATA → SUPABASE', 'heading');
+    log('════════════════════════════════════', 'heading');
+    log(`  Waktu: ${new Date().toLocaleString('id-ID')}`, 'info');
+    log('', 'info');
+
+    const tablesToMigrate = TABLES.filter(t => tableStates[t.key].local > 0);
+    let done = 0;
+
+    for (const t of TABLES) {
+        await migrateTable(t);
+        done++;
+        const pct = Math.round((done / TABLES.length) * 100);
+        document.getElementById('overall-progress').style.width = pct + '%';
+        document.getElementById('overall-label').textContent = `${done} / ${TABLES.length} tabel selesai (${pct}%)`;
+    }
+
+    // Done
+    isMigrating = false;
+    document.getElementById('btn-start').disabled = false;
+    document.getElementById('btn-scan').disabled = false;
+
+    log('', 'info');
+    log('════════════════════════════════════', 'heading');
+    log(`  MIGRASI SELESAI`, 'heading');
+    log(`  Berhasil: ${totalSuccess} record`, 'success');
+    log(`  Gagal   : ${totalError} record`, totalError > 0 ? 'error' : 'info');
+    log('════════════════════════════════════', 'heading');
+
+    if (totalError === 0) {
+        showAlert('success', `Migrasi berhasil! ${totalSuccess} record telah dipindahkan ke Supabase.`);
+    } else {
+        showAlert('error', `Migrasi selesai dengan ${totalError} error. Cek log untuk detail.`);
+    }
+}
+
+async function migrateTable(tableConfig) {
+    const { key, icon, label, idbStore, supabaseTable, map } = tableConfig;
+
+    log(``, 'info');
+    log(`${icon} Memproses tabel: ${label} (${supabaseTable})`, 'heading');
+
+    updateRow(key, 'running', `Sedang membaca data lokal...`);
+
+    let records = [];
+    try {
+        records = await readFromIDB(idbStore);
+    } catch (e) {
+        log(`  ✗ Gagal baca IDB '${idbStore}': ${e.message}`, 'error');
+        updateRow(key, 'error', `Gagal baca IDB: ${e.message}`);
+        return;
+    }
+
+    if (records.length === 0) {
+        log(`  ℹ Tidak ada data lokal, dilewati`, 'warn');
+        updateRow(key, 'skip', `Lokal: 0 record | Tidak ada data`);
+        return;
+    }
+
+    log(`  → ${records.length} record ditemukan, mulai upsert...`, 'info');
+
+    let migrated = 0;
+    let failed = 0;
+    const BATCH = 50; // upsert per batch
+
+    for (let i = 0; i < records.length; i += BATCH) {
+        const batch = records.slice(i, i + BATCH);
+        const mapped = batch.map(r => {
+            try { return map(r); }
+            catch(e) { return null; }
+        }).filter(Boolean);
+
+        try {
+            const { error } = await sb
+                .from(supabaseTable)
+                .upsert(mapped, { onConflict: 'id', ignoreDuplicates: false });
+
+            if (error) {
+                log(`  ✗ Batch ${Math.floor(i/BATCH)+1} error: ${error.message}`, 'error');
+                failed += batch.length;
+            } else {
+                migrated += mapped.length;
+                log(`  ✓ Batch ${Math.floor(i/BATCH)+1}: ${mapped.length} record berhasil`, 'success');
+            }
+        } catch (e) {
+            log(`  ✗ Batch ${Math.floor(i/BATCH)+1} exception: ${e.message}`, 'error');
+            failed += batch.length;
+        }
+
+        // Small delay to avoid rate limits
+        await new Promise(r => setTimeout(r, 100));
+    }
+
+    tableStates[key] = { ...tableStates[key], migrated, failed };
+    totalSuccess += migrated;
+    totalError += failed;
+
+    document.getElementById('count-success').textContent = totalSuccess;
+    document.getElementById('count-error').textContent = totalError;
+
+    const status = failed === 0 ? 'success' : 'error';
+    updateRow(key, status, `Lokal: ${records.length} | Berhasil: ${migrated} | Gagal: ${failed}`);
+    log(`  Hasil: ${migrated}/${records.length} berhasil, ${failed} gagal`, failed === 0 ? 'success' : 'error');
+}
+
+// ===== READ FROM INDEXEDDB DIRECTLY =====
+function readFromIDB(storeName) {
+    return new Promise((resolve, reject) => {
+        // Use the global `db` opened by initDB()
+        if (!window.db && typeof db === 'undefined') {
+            reject(new Error('IndexedDB belum diinisialisasi'));
+            return;
+        }
+        const dbInstance = window.db || db;
+        if (!dbInstance.objectStoreNames.contains(storeName)) {
+            resolve([]);
+            return;
+        }
+        try {
+            const tx = dbInstance.transaction([storeName], 'readonly');
+            const store = tx.objectStore(storeName);
+            const req = store.getAll();
+            req.onsuccess = () => resolve(req.result || []);
+            req.onerror = () => reject(req.error);
+        } catch (e) {
+            resolve([]); // store might not exist in older DB versions
+        }
+    });
+}
+
+// ===== LOG =====
+function log(msg, type = 'info') {
+    const console = document.getElementById('log-console');
+    const line = document.createElement('div');
+    line.className = 'log-line ' + type;
+    line.textContent = msg === '' ? '\u00A0' : `[${new Date().toLocaleTimeString('id-ID')}] ${msg}`;
+    if (msg === '' || msg.startsWith('═') || msg.startsWith('  ')) {
+        line.textContent = msg;
+    }
+    console.appendChild(line);
+    console.scrollTop = console.scrollHeight;
+}
+
+function clearLog() {
+    document.getElementById('log-console').innerHTML = '<div class="log-line info">Log dibersihkan.</div>';
+}
+
+// ===== ALERT =====
+function showAlert(type, msg) {
+    ['warning', 'success', 'error'].forEach(t => {
+        document.getElementById('alert-' + t)?.classList.remove('show');
+    });
+    const el = document.getElementById('alert-' + type);
+    const msgEl = document.getElementById('alert-' + type + '-msg');
+    if (el) {
+        if (msgEl) msgEl.textContent = msg;
+        el.classList.add('show');
+    }
+}
+</script>
+</body>
+</html>
