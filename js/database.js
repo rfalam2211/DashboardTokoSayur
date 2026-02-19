@@ -1,16 +1,22 @@
 // ============================================================
 // DATABASE.JS — Supabase Cloud Only
-// IndexedDB telah dihapus. Semua data disimpan di Supabase.
-// supabase.js harus dimuat sebelum file ini.
+// Semua operasi data langsung ke Supabase.
+// supabase.js harus dimuat lebih dulu (untuk supabaseClient).
 // ============================================================
 
 /**
  * initDB() — compatibility stub (tidak ada IndexedDB)
- * Dipanggil dari app.js dan login.html, langsung resolve.
  */
 function initDB() {
     console.log('[DB] Using Supabase cloud database only.');
     return Promise.resolve();
+}
+
+// Shorthand helper — ambil supabaseClient dari supabase.js
+function _db() {
+    const client = getSupabaseClient();
+    if (!client) throw new Error('Supabase client belum diinisialisasi. Pastikan initSupabase() dipanggil terlebih dahulu.');
+    return client;
 }
 
 // ============================================================
@@ -19,7 +25,7 @@ function initDB() {
 
 async function addProduct(product) {
     const id = generateId();
-    const { data, error } = await supabase
+    const { data, error } = await _db()
         .from('products')
         .insert([{
             id,
@@ -38,7 +44,7 @@ async function addProduct(product) {
 }
 
 async function getAllProducts() {
-    const { data, error } = await supabase
+    const { data, error } = await _db()
         .from('products')
         .select('*')
         .order('name');
@@ -47,7 +53,7 @@ async function getAllProducts() {
 }
 
 async function getProduct(id) {
-    const { data, error } = await supabase
+    const { data, error } = await _db()
         .from('products')
         .select('*')
         .eq('id', id)
@@ -58,30 +64,25 @@ async function getProduct(id) {
 
 async function updateProduct(id, updates) {
     const payload = { ...updates, updated_at: new Date().toISOString() };
-    delete payload.createdAt;
-    delete payload.updatedAt;
-    delete payload.created_at;
-    const { error } = await supabase.from('products').update(payload).eq('id', id);
+    delete payload.createdAt; delete payload.updatedAt; delete payload.created_at;
+    const { error } = await _db().from('products').update(payload).eq('id', id);
     if (error) throw error;
 }
 
 async function deleteProduct(id) {
-    const { error } = await supabase.from('products').delete().eq('id', id);
+    const { error } = await _db().from('products').delete().eq('id', id);
     if (error) throw error;
 }
 
 async function updateStock(id, quantityChange) {
-    const { data: product, error: fetchError } = await supabase
-        .from('products')
-        .select('stock')
-        .eq('id', id)
-        .single();
+    const { data: product, error: fetchError } = await _db()
+        .from('products').select('stock').eq('id', id).single();
     if (fetchError) throw fetchError;
 
     const newStock = product.stock + quantityChange;
     if (newStock < 0) throw new Error('Stok tidak mencukupi');
 
-    const { error } = await supabase
+    const { error } = await _db()
         .from('products')
         .update({ stock: newStock, updated_at: new Date().toISOString() })
         .eq('id', id);
@@ -90,11 +91,8 @@ async function updateStock(id, quantityChange) {
 }
 
 async function getProductByBarcode(barcode) {
-    const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('barcode', barcode)
-        .maybeSingle();
+    const { data, error } = await _db()
+        .from('products').select('*').eq('barcode', barcode).maybeSingle();
     if (error) throw error;
     return data ? { ...data, createdAt: data.created_at } : null;
 }
@@ -105,7 +103,7 @@ async function getProductByBarcode(barcode) {
 
 async function addTransaction(transactionData) {
     const id = generateId();
-    const { data, error } = await supabase
+    const { data, error } = await _db()
         .from('transactions')
         .insert([{
             id,
@@ -125,17 +123,14 @@ async function addTransaction(transactionData) {
 }
 
 async function getAllTransactions(filter = null) {
-    let query = supabase.from('transactions').select('*');
-
+    let query = _db().from('transactions').select('*');
     if (filter && filter.from && filter.to) {
         query = query
             .gte('created_at', filter.from.toISOString())
             .lt('created_at', filter.to.toISOString());
     }
-
     const { data, error } = await query.order('created_at', { ascending: false });
     if (error) throw error;
-
     return data.map(t => ({
         ...t,
         date: t.created_at,
@@ -145,18 +140,10 @@ async function getAllTransactions(filter = null) {
 }
 
 async function getTransaction(id) {
-    const { data, error } = await supabase
-        .from('transactions')
-        .select('*')
-        .eq('id', id)
-        .single();
+    const { data, error } = await _db()
+        .from('transactions').select('*').eq('id', id).single();
     if (error) { if (error.code === 'PGRST116') return null; throw error; }
-    return {
-        ...data,
-        date: data.created_at,
-        paymentMethod: data.payment_method,
-        customerName: data.customer_name
-    };
+    return { ...data, date: data.created_at, paymentMethod: data.payment_method, customerName: data.customer_name };
 }
 
 // ============================================================
@@ -165,7 +152,7 @@ async function getTransaction(id) {
 
 async function addExpense(expense) {
     const id = generateId();
-    const { data, error } = await supabase
+    const { data, error } = await _db()
         .from('expenses')
         .insert([{
             id,
@@ -182,21 +169,19 @@ async function addExpense(expense) {
 }
 
 async function getAllExpenses(filter = null) {
-    let query = supabase.from('expenses').select('*');
-
+    let query = _db().from('expenses').select('*');
     if (filter && filter.from && filter.to) {
-        const fromDate = filter.from.toISOString().split('T')[0];
-        const toDate = filter.to.toISOString().split('T')[0];
-        query = query.gte('date', fromDate).lt('date', toDate);
+        query = query
+            .gte('date', filter.from.toISOString().split('T')[0])
+            .lt('date', filter.to.toISOString().split('T')[0]);
     }
-
     const { data, error } = await query.order('date', { ascending: false });
     if (error) throw error;
     return data;
 }
 
 async function deleteExpense(id) {
-    const { error } = await supabase.from('expenses').delete().eq('id', id);
+    const { error } = await _db().from('expenses').delete().eq('id', id);
     if (error) throw error;
 }
 
@@ -206,7 +191,7 @@ async function deleteExpense(id) {
 
 async function addUser(user) {
     const id = generateId();
-    const { data, error } = await supabase
+    const { data, error } = await _db()
         .from('users')
         .insert([{
             id,
@@ -223,45 +208,35 @@ async function addUser(user) {
 }
 
 async function getAllUsers() {
-    const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .order('name');
+    const { data, error } = await _db()
+        .from('users').select('*').order('name');
     if (error) throw error;
     return data.map(u => ({ ...u, createdAt: u.created_at }));
 }
 
 async function getUserByUsername(username) {
-    const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('username', username)
-        .maybeSingle();
+    const { data, error } = await _db()
+        .from('users').select('*').eq('username', username).maybeSingle();
     if (error) throw error;
     return data ? { ...data, createdAt: data.created_at } : null;
 }
 
 async function getUser(id) {
-    const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', id)
-        .single();
+    const { data, error } = await _db()
+        .from('users').select('*').eq('id', id).single();
     if (error) { if (error.code === 'PGRST116') return null; throw error; }
     return { ...data, createdAt: data.created_at };
 }
 
 async function updateUser(id, updates) {
     const payload = { ...updates, updated_at: new Date().toISOString() };
-    delete payload.createdAt;
-    delete payload.updatedAt;
-    delete payload.created_at;
-    const { error } = await supabase.from('users').update(payload).eq('id', id);
+    delete payload.createdAt; delete payload.updatedAt; delete payload.created_at;
+    const { error } = await _db().from('users').update(payload).eq('id', id);
     if (error) throw error;
 }
 
 async function deleteUser(id) {
-    const { error } = await supabase.from('users').delete().eq('id', id);
+    const { error } = await _db().from('users').delete().eq('id', id);
     if (error) throw error;
 }
 
@@ -284,7 +259,7 @@ async function seedDefaultUsers() {
 
 async function addDiscount(discount) {
     const id = generateId();
-    const { data, error } = await supabase
+    const { data, error } = await _db()
         .from('discounts')
         .insert([{
             id,
@@ -306,10 +281,8 @@ async function addDiscount(discount) {
 }
 
 async function getAllDiscounts() {
-    const { data, error } = await supabase
-        .from('discounts')
-        .select('*')
-        .order('created_at', { ascending: false });
+    const { data, error } = await _db()
+        .from('discounts').select('*').order('created_at', { ascending: false });
     if (error) throw error;
     return data.map(d => ({
         ...d,
@@ -336,18 +309,13 @@ async function getActiveDiscounts() {
 async function calculateProductDiscount(item, quantity) {
     const discounts = await getActiveDiscounts();
     let best = 0;
-
     for (const d of discounts) {
         const isForAll = d.applicableTo === 'all';
         const isForProduct = d.applicableTo === 'product' && (d.productIds || []).includes(item.id);
         const isForCat = d.applicableTo === 'category' && (d.categoryIds || []).includes(item.category);
-
         if (!isForAll && !isForProduct && !isForCat) continue;
-
         const subtotal = item.price * quantity;
-        const amount = d.type === 'percentage'
-            ? (subtotal * d.value / 100)
-            : d.value;
+        const amount = d.type === 'percentage' ? (subtotal * d.value / 100) : d.value;
         if (amount > best) best = amount;
     }
     return best;
@@ -355,21 +323,18 @@ async function calculateProductDiscount(item, quantity) {
 
 async function updateDiscount(id, updates) {
     const payload = { ...updates, updated_at: new Date().toISOString() };
-    // camelCase → snake_case
     if (payload.applicableTo !== undefined) { payload.applicable_to = payload.applicableTo; delete payload.applicableTo; }
     if (payload.productIds !== undefined) { payload.product_ids = payload.productIds; delete payload.productIds; }
     if (payload.categoryIds !== undefined) { payload.category_ids = payload.categoryIds; delete payload.categoryIds; }
     if (payload.validFrom !== undefined) { payload.valid_from = payload.validFrom; delete payload.validFrom; }
     if (payload.validTo !== undefined) { payload.valid_to = payload.validTo; delete payload.validTo; }
-    delete payload.createdAt;
-    delete payload.created_at;
-
-    const { error } = await supabase.from('discounts').update(payload).eq('id', id);
+    delete payload.createdAt; delete payload.created_at;
+    const { error } = await _db().from('discounts').update(payload).eq('id', id);
     if (error) throw error;
 }
 
 async function deleteDiscount(id) {
-    const { error } = await supabase.from('discounts').delete().eq('id', id);
+    const { error } = await _db().from('discounts').delete().eq('id', id);
     if (error) throw error;
 }
 
@@ -379,7 +344,7 @@ async function deleteDiscount(id) {
 
 async function addCustomer(customer) {
     const id = generateId();
-    const { data, error } = await supabase
+    const { data, error } = await _db()
         .from('customers')
         .insert([{
             id,
@@ -396,24 +361,15 @@ async function addCustomer(customer) {
 }
 
 async function getAllCustomers() {
-    const { data, error } = await supabase
-        .from('customers')
-        .select('*')
-        .order('name');
+    const { data, error } = await _db()
+        .from('customers').select('*').order('name');
     if (error) throw error;
-    return data.map(c => ({
-        ...c,
-        totalDebt: c.total_debt || 0,
-        createdAt: c.created_at
-    }));
+    return data.map(c => ({ ...c, totalDebt: c.total_debt || 0, createdAt: c.created_at }));
 }
 
 async function getCustomer(id) {
-    const { data, error } = await supabase
-        .from('customers')
-        .select('*')
-        .eq('id', id)
-        .single();
+    const { data, error } = await _db()
+        .from('customers').select('*').eq('id', id).single();
     if (error) { if (error.code === 'PGRST116') return null; throw error; }
     return { ...data, totalDebt: data.total_debt || 0, createdAt: data.created_at };
 }
@@ -421,14 +377,13 @@ async function getCustomer(id) {
 async function updateCustomer(id, updates) {
     const payload = { ...updates, updated_at: new Date().toISOString() };
     if (payload.totalDebt !== undefined) { payload.total_debt = payload.totalDebt; delete payload.totalDebt; }
-    delete payload.createdAt;
-    delete payload.created_at;
-    const { error } = await supabase.from('customers').update(payload).eq('id', id);
+    delete payload.createdAt; delete payload.created_at;
+    const { error } = await _db().from('customers').update(payload).eq('id', id);
     if (error) throw error;
 }
 
 async function deleteCustomer(id) {
-    const { error } = await supabase.from('customers').delete().eq('id', id);
+    const { error } = await _db().from('customers').delete().eq('id', id);
     if (error) throw error;
 }
 
@@ -439,7 +394,7 @@ async function deleteCustomer(id) {
 async function addDebt(debt) {
     const id = generateId();
     const amount = parseFloat(debt.amount);
-    const { data, error } = await supabase
+    const { data, error } = await _db()
         .from('debts')
         .insert([{
             id,
@@ -462,7 +417,7 @@ async function addDebt(debt) {
 }
 
 async function getAllDebts(filter = null) {
-    let query = supabase.from('debts').select('*');
+    let query = _db().from('debts').select('*');
     if (filter) query = query.eq('status', filter);
     const { data, error } = await query.order('created_at', { ascending: false });
     if (error) throw error;
@@ -470,20 +425,15 @@ async function getAllDebts(filter = null) {
 }
 
 async function getDebt(id) {
-    const { data, error } = await supabase
-        .from('debts')
-        .select('*')
-        .eq('id', id)
-        .single();
+    const { data, error } = await _db()
+        .from('debts').select('*').eq('id', id).single();
     if (error) { if (error.code === 'PGRST116') return null; throw error; }
     return _mapDebt(data);
 }
 
 async function getDebtsByCustomer(customerId) {
-    const { data, error } = await supabase
-        .from('debts')
-        .select('*')
-        .eq('customer_id', customerId)
+    const { data, error } = await _db()
+        .from('debts').select('*').eq('customer_id', customerId)
         .order('created_at', { ascending: false });
     if (error) throw error;
     return data.map(_mapDebt);
@@ -507,9 +457,8 @@ async function updateDebt(id, updates) {
     if (payload.customerName !== undefined) { payload.customer_name = payload.customerName; delete payload.customerName; }
     if (payload.transactionId !== undefined) { payload.transaction_id = payload.transactionId; delete payload.transactionId; }
     if (payload.dueDate !== undefined) { payload.due_date = payload.dueDate; delete payload.dueDate; }
-    delete payload.createdAt;
-    delete payload.created_at;
-    const { error } = await supabase.from('debts').update(payload).eq('id', id);
+    delete payload.createdAt; delete payload.created_at;
+    const { error } = await _db().from('debts').update(payload).eq('id', id);
     if (error) throw error;
 }
 
@@ -520,30 +469,16 @@ async function recordDebtPayment(debtId, payment) {
     const paymentAmount = parseFloat(payment.amount);
     const newPaid = (debt.paid || 0) + paymentAmount;
     const newRemaining = debt.amount - newPaid;
-
-    let newStatus = debt.status;
-    if (newRemaining <= 0) newStatus = 'paid';
-    else if (newPaid > 0) newStatus = 'partial';
+    let newStatus = newRemaining <= 0 ? 'paid' : (newPaid > 0 ? 'partial' : debt.status);
 
     const newPayments = [
         ...(debt.payments || []),
-        {
-            date: payment.date || new Date().toISOString(),
-            amount: paymentAmount,
-            method: payment.method || 'tunai',
-            notes: payment.notes || ''
-        }
+        { date: payment.date || new Date().toISOString(), amount: paymentAmount, method: payment.method || 'tunai', notes: payment.notes || '' }
     ];
 
-    const { data, error } = await supabase
+    const { data, error } = await _db()
         .from('debts')
-        .update({
-            paid: newPaid,
-            remaining: Math.max(0, newRemaining),
-            status: newStatus,
-            payments: newPayments,
-            updated_at: new Date().toISOString()
-        })
+        .update({ paid: newPaid, remaining: Math.max(0, newRemaining), status: newStatus, payments: newPayments, updated_at: new Date().toISOString() })
         .eq('id', debtId)
         .select()
         .single();
@@ -555,7 +490,7 @@ async function updateDebtStatus(id) {
     const debt = await getDebt(id);
     if (!debt || debt.status === 'paid') return;
     if (debt.dueDate && new Date(debt.dueDate) < new Date()) {
-        const { error } = await supabase
+        const { error } = await _db()
             .from('debts')
             .update({ status: 'overdue', updated_at: new Date().toISOString() })
             .eq('id', id);
@@ -564,6 +499,6 @@ async function updateDebtStatus(id) {
 }
 
 async function deleteDebt(id) {
-    const { error } = await supabase.from('debts').delete().eq('id', id);
+    const { error } = await _db().from('debts').delete().eq('id', id);
     if (error) throw error;
 }

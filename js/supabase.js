@@ -1,352 +1,53 @@
-// Supabase Client Integration
-// This module handles cloud database operations using Supabase
+// ============================================================
+// SUPABASE CLIENT
+// PENTING: variabel client disimpan sebagai `supabaseClient`
+//          agar tidak bentrok dengan `window.supabase` dari CDN
+// ============================================================
 
-// Supabase Configuration - Replace with your project details
-const SUPABASE_URL = 'https://rnpvfhllrmdwgoxpmapr.supabase.co'; // e.g., https://xxxxx.supabase.co
+const SUPABASE_URL = 'https://rnpvfhllrmdwgoxpmapr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJucHZmaGxscm1kd2dveHBtYXByIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4MDk2MDUsImV4cCI6MjA4NDM4NTYwNX0.9-PufKDfndh6GTlvR756_n_92mVOOYuC0r3qbS4n3Nk';
 
-let supabase = null;
+// Client instance — pakai nama berbeda dari window.supabase (CDN)
+let supabaseClient = null;
 
 /**
- * Initialize Supabase client
+ * Inisialisasi Supabase client.
+ * Dipanggil dari app.js dan login.html sebelum operasi DB.
  */
 function initSupabase() {
-    if (typeof window.supabase !== 'undefined') {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('Supabase client initialized');
-        return true;
-    } else {
-        console.warn('Supabase library not loaded, using offline mode');
+    try {
+        // window.supabase adalah CDN library object (bukan client)
+        if (typeof window.supabase !== 'undefined' && typeof window.supabase.createClient === 'function') {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('[Supabase] Client initialized ✓');
+            return true;
+        } else {
+            console.warn('[Supabase] Library not loaded');
+            return false;
+        }
+    } catch (e) {
+        console.error('[Supabase] Init error:', e);
         return false;
     }
 }
 
 /**
- * Check if Supabase is configured
+ * Cek apakah credentials terisi
  */
 function isSupabaseConfigured() {
-    // Return true since credentials are now properly configured
     return SUPABASE_URL.includes('supabase.co') && SUPABASE_ANON_KEY.startsWith('eyJ');
 }
 
 /**
- * Check if online mode is available
+ * Cek apakah Supabase siap dipakai
  */
 function isOnlineMode() {
-    return supabase !== null && isSupabaseConfigured() && navigator.onLine;
-}
-
-// ===== AUTHENTICATION =====
-
-/**
- * Sign up new user
- */
-async function supabaseSignUp(email, password, userData) {
-    if (!isOnlineMode()) return null;
-    
-    const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-            data: userData
-        }
-    });
-    
-    if (error) throw error;
-    return data;
+    return supabaseClient !== null && navigator.onLine;
 }
 
 /**
- * Sign in user
+ * Kembalikan client instance (dipakai oleh database.js)
  */
-async function supabaseSignIn(email, password) {
-    if (!isOnlineMode()) return null;
-    
-    const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-    });
-    
-    if (error) throw error;
-    return data;
+function getSupabaseClient() {
+    return supabaseClient;
 }
-
-/**
- * Sign out user
- */
-async function supabaseSignOut() {
-    if (!isOnlineMode()) return;
-    
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-}
-
-/**
- * Get current session
- */
-async function supabaseGetSession() {
-    if (!isOnlineMode()) return null;
-    
-    const { data: { session } } = await supabase.auth.getSession();
-    return session;
-}
-
-// ===== PRODUCTS =====
-
-async function cloudGetAllProducts() {
-    if (!isOnlineMode()) return null;
-    
-    const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('name');
-    
-    if (error) throw error;
-    return data;
-}
-
-async function cloudAddProduct(product) {
-    if (!isOnlineMode()) return null;
-    
-    const { data, error } = await supabase
-        .from('products')
-        .insert([product])
-        .select()
-        .single();
-    
-    if (error) throw error;
-    return data;
-}
-
-async function cloudUpdateProduct(id, updates) {
-    if (!isOnlineMode()) return null;
-    
-    const { data, error } = await supabase
-        .from('products')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-    
-    if (error) throw error;
-    return data;
-}
-
-async function cloudDeleteProduct(id) {
-    if (!isOnlineMode()) return null;
-    
-    const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', id);
-    
-    if (error) throw error;
-    return true;
-}
-
-// ===== TRANSACTIONS =====
-
-async function cloudGetAllTransactions(dateRange = null) {
-    if (!isOnlineMode()) return null;
-    
-    let query = supabase.from('transactions').select('*');
-    
-    if (dateRange) {
-        query = query
-            .gte('created_at', dateRange.start)
-            .lte('created_at', dateRange.end);
-    }
-    
-    const { data, error } = await query.order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    return data;
-}
-
-async function cloudAddTransaction(transaction) {
-    if (!isOnlineMode()) return null;
-    
-    const { data, error } = await supabase
-        .from('transactions')
-        .insert([transaction])
-        .select()
-        .single();
-    
-    if (error) throw error;
-    return data;
-}
-
-// ===== CUSTOMERS =====
-
-async function cloudGetAllCustomers() {
-    if (!isOnlineMode()) return null;
-    
-    const { data, error } = await supabase
-        .from('customers')
-        .select('*')
-        .order('name');
-    
-    if (error) throw error;
-    return data;
-}
-
-async function cloudAddCustomer(customer) {
-    if (!isOnlineMode()) return null;
-    
-    const { data, error } = await supabase
-        .from('customers')
-        .insert([customer])
-        .select()
-        .single();
-    
-    if (error) throw error;
-    return data;
-}
-
-// ===== DEBTS =====
-
-async function cloudGetAllDebts() {
-    if (!isOnlineMode()) return null;
-    
-    const { data, error } = await supabase
-        .from('debts')
-        .select('*, customers(name)')
-        .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    return data;
-}
-
-async function cloudAddDebt(debt) {
-    if (!isOnlineMode()) return null;
-    
-    const { data, error } = await supabase
-        .from('debts')
-        .insert([debt])
-        .select()
-        .single();
-    
-    if (error) throw error;
-    return data;
-}
-
-async function cloudUpdateDebt(id, updates) {
-    if (!isOnlineMode()) return null;
-    
-    const { data, error } = await supabase
-        .from('debts')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-    
-    if (error) throw error;
-    return data;
-}
-
-// ===== EXPENSES =====
-
-async function cloudGetAllExpenses(dateRange = null) {
-    if (!isOnlineMode()) return null;
-    
-    let query = supabase.from('expenses').select('*');
-    
-    if (dateRange) {
-        query = query
-            .gte('date', dateRange.start)
-            .lte('date', dateRange.end);
-    }
-    
-    const { data, error } = await query.order('date', { ascending: false });
-    
-    if (error) throw error;
-    return data;
-}
-
-async function cloudAddExpense(expense) {
-    if (!isOnlineMode()) return null;
-    
-    const { data, error } = await supabase
-        .from('expenses')
-        .insert([expense])
-        .select()
-        .single();
-    
-    if (error) throw error;
-    return data;
-}
-
-// ===== SYNC FUNCTIONS =====
-
-/**
- * Sync local data to cloud
- */
-async function syncToCloud() {
-    if (!isOnlineMode()) {
-        console.log('Offline mode - sync skipped');
-        return false;
-    }
-    
-    try {
-        // Get local data
-        const localProducts = await getAllProducts();
-        const localTransactions = await getAllTransactions();
-        const localCustomers = await getAllCustomers();
-        const localDebts = await getAllDebts();
-        const localExpenses = await getAllExpenses();
-        
-        // Upsert to cloud (simplified - in production, use proper conflict resolution)
-        console.log('Syncing to cloud...');
-        
-        // Sync products
-        for (const product of localProducts) {
-            await cloudAddProduct(product).catch(() => {});
-        }
-        
-        console.log('Sync complete!');
-        showToast('Data berhasil disinkronkan ke cloud', 'success');
-        return true;
-    } catch (error) {
-        console.error('Sync error:', error);
-        showToast('Gagal sinkronisasi ke cloud', 'error');
-        return false;
-    }
-}
-
-/**
- * Sync cloud data to local
- */
-async function syncFromCloud() {
-    if (!isOnlineMode()) {
-        console.log('Offline mode - sync skipped');
-        return false;
-    }
-    
-    try {
-        console.log('Downloading from cloud...');
-        
-        // Get cloud data and save to local IndexedDB
-        const cloudProducts = await cloudGetAllProducts();
-        const cloudTransactions = await cloudGetAllTransactions();
-        const cloudCustomers = await cloudGetAllCustomers();
-        const cloudDebts = await cloudGetAllDebts();
-        
-        // Store in IndexedDB for offline access
-        // (Implementation depends on conflict resolution strategy)
-        
-        console.log('Download complete!');
-        showToast('Data berhasil diunduh dari cloud', 'success');
-        return true;
-    } catch (error) {
-        console.error('Download error:', error);
-        showToast('Gagal mengunduh dari cloud', 'error');
-        return false;
-    }
-}
-
-// Initialize on load
-document.addEventListener('DOMContentLoaded', () => {
-    if (isSupabaseConfigured()) {
-        initSupabase();
-    }
-});
