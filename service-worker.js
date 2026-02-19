@@ -1,5 +1,6 @@
 // Service Worker for Offline Functionality
-const CACHE_NAME = 'ida-buah-v1';
+// BUMP VERSION setiap kali ada perubahan JS penting
+const CACHE_NAME = 'ida-buah-v3';
 const urlsToCache = [
     '/',
     '/index.html',
@@ -7,15 +8,19 @@ const urlsToCache = [
     '/styles.css',
     '/app.js',
     '/js/utils.js',
+    '/js/supabase.js',
     '/js/database.js',
-    '/js/auth.js',
+    '/js/auth-v2.js',
     '/js/dashboard.js',
     '/js/products.js',
     '/js/pos.js',
     '/js/transactions.js',
     '/js/reports.js',
-    '/js/users.js'
+    '/js/users.js',
+    '/js/customers.js',
+    '/js/debts.js'
 ];
+
 
 // Install event - cache resources
 self.addEventListener('install', (event) => {
