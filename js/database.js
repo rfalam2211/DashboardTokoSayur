@@ -4,8 +4,8 @@
 // Tidak ada `let supabase` agar tidak bentrok dengan CDN.
 // ============================================================
 
-const _SUPABASE_URL = 'https://rnpvfhllrmdwgoxpmapr.supabase.co';
-const _SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJucHZmaGxscm1kd2dveHBtYXByIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4MDk2MDUsImV4cCI6MjA4NDM4NTYwNX0.9-PufKDfndh6GTlvR756_n_92mVOOYuC0r3qbS4n3Nk';
+const _SUPABASE_URL = 'https://lnuoejrcfpglwlfosawn.supabase.co';
+const _SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxudW9lanJjZnBnbHdsZm9zYXduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4MDIwMjcsImV4cCI6MjA4NDM3ODAyN30.711yL035zDnbpiFqD_-IxkLG7SvSg5Etk-bUUsUfH0E';
 
 /**
  * initDB() — inisialisasi Supabase client.
