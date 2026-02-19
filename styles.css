@@ -2524,3 +2524,171 @@ tbody tr:hover {
         padding-right: var(--spacing-md);
     }
 }
+
+/* ============================================================
+   CUSTOMERS & DEBTS — RESPONSIVE FIX
+   ============================================================ */
+
+/* Page header always wraps */
+.page-header {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.page-header>div {
+    flex: 1;
+    min-width: 0;
+}
+
+.page-header h2 {
+    font-size: clamp(1.25rem, 4vw, 2rem);
+    word-break: break-word;
+}
+
+.page-header .btn-primary {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* Debt filters — flex dengan wrap */
+.debt-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.debt-filters .select-input {
+    flex: 1;
+    min-width: 130px;
+}
+
+/* Search input customers */
+#search-customers {
+    width: 100%;
+    max-width: 280px;
+}
+
+/* Debt summary grid */
+.debt-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+}
+
+.summary-item {
+    background: var(--color-gray-50);
+    border-radius: var(--radius-md);
+    padding: 0.875rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    border: 1px solid var(--color-gray-100);
+}
+
+.summary-label {
+    font-size: 0.8rem;
+    color: var(--color-gray-500);
+    font-weight: 500;
+}
+
+.summary-value {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+}
+
+.summary-value.text-success {
+    color: var(--color-success);
+}
+
+.summary-value.text-danger {
+    color: var(--color-danger);
+}
+
+/* Table container always scrollable */
+.table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 640px) {
+
+    /* Stack page headers */
+    #customers-page .page-header,
+    #debts-page .page-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #customers-page .page-header .btn,
+    #debts-page .page-header .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Search full width */
+    #search-customers {
+        max-width: 100%;
+    }
+
+    /* Card headers stack */
+    #customers-page .card-header,
+    #debts-page .card-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    /* Filters stack */
+    .debt-filters {
+        flex-direction: column;
+    }
+
+    .debt-filters .select-input {
+        width: 100%;
+        min-width: unset;
+    }
+
+    /* Debt summary 2 col */
+    .debt-summary {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+
+    .summary-item {
+        padding: 0.65rem;
+    }
+
+    .summary-value {
+        font-size: 0.9rem;
+    }
+
+    /* Hide Alamat column on customers table */
+    #customers-page table th:nth-child(3),
+    #customers-page table td:nth-child(3) {
+        display: none;
+    }
+
+    /* Hide Dibayar column on debts table */
+    #debts-page table th:nth-child(3),
+    #debts-page table td:nth-child(3) {
+        display: none;
+    }
+}
+
+@media (max-width: 400px) {
+    .debt-summary {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    /* Hide Telepon on customers */
+    #customers-page table th:nth-child(2),
+    #customers-page table td:nth-child(2) {
+        display: none;
+    }
+
+    /* Hide Jatuh Tempo on debts */
+    #debts-page table th:nth-child(5),
+    #debts-page table td:nth-child(5) {
+        display: none;
+    }
+}

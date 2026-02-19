@@ -18,9 +18,9 @@
         <div class="card">
             <div class="card-header">
                 <h3>Daftar Pelanggan</h3>
-                <input type="text" id="search-customers" class="input" placeholder="Cari pelanggan..." style="max-width: 300px;">
+                <input type="text" id="search-customers" class="input" placeholder="Cari pelanggan...">
             </div>
-            <div class="card-body">
+            <div class="card-body" style="padding: 0;">
                 <div class="table-container">
                     <table>
                         <thead>
@@ -62,7 +62,7 @@
             </button>
         </div>
 
-        <div class="card">
+        <div class="card" style="margin-bottom: 1.25rem;">
             <div class="card-header">
                 <h3>Ringkasan Hutang</h3>
             </div>
@@ -76,7 +76,7 @@
         <div class="card">
             <div class="card-header">
                 <h3>Daftar Hutang</h3>
-                <div style="display: flex; gap: 1rem;">
+                <div class="debt-filters">
                     <select id="debt-status-filter" class="select-input">
                         <option value="">Semua Status</option>
                         <option value="pending">Belum Dibayar</option>
@@ -89,7 +89,7 @@
                     </select>
                 </div>
             </div>
-            <div class="card-body">
+            <div class="card-body" style="padding: 0;">
                 <div class="table-container">
                     <table>
                         <thead>
