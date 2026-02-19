@@ -1,22 +1,39 @@
 // ============================================================
 // DATABASE.JS — Supabase Cloud Only
-// Semua operasi data langsung ke Supabase.
-// supabase.js harus dimuat lebih dulu (untuk supabaseClient).
+// Inisialisasi Supabase dilakukan di sini langsung.
+// Tidak ada `let supabase` agar tidak bentrok dengan CDN.
 // ============================================================
 
+const _SUPABASE_URL = 'https://rnpvfhllrmdwgoxpmapr.supabase.co';
+const _SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJucHZmaGxscm1kd2dveHBtYXByIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4MDk2MDUsImV4cCI6MjA4NDM4NTYwNX0.9-PufKDfndh6GTlvR756_n_92mVOOYuC0r3qbS4n3Nk';
+
 /**
- * initDB() — compatibility stub (tidak ada IndexedDB)
+ * initDB() — inisialisasi Supabase client.
+ * Dipanggil dari app.js dan login.html.
  */
 function initDB() {
-    console.log('[DB] Using Supabase cloud database only.');
+    if (!window._supabaseClient) {
+        if (typeof window.supabase !== 'undefined' && typeof window.supabase.createClient === 'function') {
+            window._supabaseClient = window.supabase.createClient(_SUPABASE_URL, _SUPABASE_ANON_KEY);
+            console.log('[DB] Supabase client ready ✓');
+        } else {
+            console.error('[DB] Supabase CDN library not found!');
+        }
+    }
     return Promise.resolve();
 }
 
-// Shorthand helper — ambil supabaseClient dari supabase.js
+// Shorthand — ambil client, throw jika belum siap
 function _db() {
-    const client = getSupabaseClient();
-    if (!client) throw new Error('Supabase client belum diinisialisasi. Pastikan initSupabase() dipanggil terlebih dahulu.');
-    return client;
+    if (!window._supabaseClient) {
+        // Coba inisialisasi lagi jika belum
+        if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+            window._supabaseClient = window.supabase.createClient(_SUPABASE_URL, _SUPABASE_ANON_KEY);
+        } else {
+            throw new Error('[DB] Supabase belum siap. Pastikan CDN dimuat sebelum database.js.');
+        }
+    }
+    return window._supabaseClient;
 }
 
 // ============================================================
