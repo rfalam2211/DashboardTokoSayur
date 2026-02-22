@@ -50,6 +50,7 @@
     /* Layout */
     --sidebar-width: 260px;
     --header-height: 80px;
+    --sidebar-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -79,6 +80,86 @@ body {
     flex-direction: column;
     z-index: 100;
     box-shadow: var(--shadow-lg);
+    transition: transform var(--sidebar-transition), width var(--sidebar-transition);
+        overflow: hidden;
+    }
+    
+    /* Sidebar collapsed state */
+    body.sidebar-collapsed .sidebar {
+        transform: translateX(calc(-1 * var(--sidebar-width)));
+    }
+    
+    body.sidebar-collapsed .main-content {
+        margin-left: 0;
+    }
+    
+    /* Sidebar Toggle Button (pegs on right edge of sidebar) */
+    .sidebar-toggle-btn {
+        position: fixed;
+        left: var(--sidebar-width);
+        top: 50%;
+        transform: translateY(-50%) translateX(-50%);
+        z-index: 101;
+        width: 28px;
+        height: 56px;
+        background: var(--color-white);
+        border: 1px solid var(--color-gray-200);
+        border-left: none;
+        border-radius: 0 10px 10px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 4px 0 12px rgba(0, 0, 0, 0.08);
+        transition: left var(--sidebar-transition), background var(--transition-base), transform var(--sidebar-transition);
+        color: var(--color-gray-500);
+        padding: 0;
+        font-family: inherit;
+    }
+    
+    .sidebar-toggle-btn:hover {
+        background: var(--color-primary);
+        color: var(--color-white);
+        border-color: var(--color-primary);
+        box-shadow: 4px 0 16px rgba(16, 185, 129, 0.3);
+    }
+    
+    .sidebar-toggle-btn .toggle-icon {
+        transition: transform var(--sidebar-transition);
+        display: flex;
+        align-items: center;
+    }
+    
+    body.sidebar-collapsed .sidebar-toggle-btn {
+        left: 0;
+        transform: translateY(-50%) translateX(100%);
+        border-left: 1px solid var(--color-gray-200);
+    }
+    
+    body.sidebar-collapsed .sidebar-toggle-btn .toggle-icon {
+        transform: rotate(180deg);
+    }
+    
+    /* Sidebar overlay for mobile when open */
+    .sidebar-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 99;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity var(--transition-base);
+        backdrop-filter: blur(2px);
+    }
+    
+    .sidebar-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+    
+    /* Mobile menu button - hide old one */
+    .mobile-menu-btn {
+        display: none !important;
 }
 
 .sidebar-header {
@@ -259,6 +340,7 @@ body {
     margin-left: var(--sidebar-width);
     padding: var(--spacing-xl);
     min-height: 100vh;
+    transition: margin-left var(--sidebar-transition);
 }
 
 .page {
@@ -1438,10 +1520,10 @@ tbody tr:hover {
         animation: fadeIn var(--transition-fast);
     }
 
-    /* Main content takes full width */
+        /* Main content takes full width on mobile */
     .main-content {
-        margin-left: 0;
-        padding: calc(var(--spacing-xl) + 44px) var(--spacing-md) var(--spacing-md);
+        margin-left: 0 !important;
+            padding: var(--spacing-lg) var(--spacing-md) var(--spacing-md);
     }
 
     /* Page header adjustments */
@@ -1658,10 +1740,15 @@ tbody tr:hover {
         --sidebar-width: 220px;
     }
 
-    .main-content {
+        /* Tablet: sidebar terbuka → margin sesuai sidebar-width */
+        body:not(.sidebar-collapsed) .main-content {
         margin-left: 220px;
     }
 
+        /* Tablet: sidebar tertutup → full width */
+        body.sidebar-collapsed .main-content {
+            margin-left: 0;
+        }
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -2689,6 +2776,476 @@ tbody tr:hover {
     /* Hide Jatuh Tempo on debts */
     #debts-page table th:nth-child(5),
     #debts-page table td:nth-child(5) {
+        display: none;
+    }
+}
+/* =====================================================
+   RIGHT SIDEBAR - Menu Cepat
+   ===================================================== */
+
+/* Toggle Button (fixed at right edge) */
+.right-sidebar-toggle {
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 10px;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    color: var(--color-white);
+    border: none;
+    border-radius: 12px 0 0 12px;
+    cursor: pointer;
+    box-shadow: -4px 0 20px rgba(16, 185, 129, 0.35);
+    transition: all var(--transition-base);
+    font-family: inherit;
+}
+
+.right-sidebar-toggle:hover {
+    padding-right: 14px;
+    box-shadow: -6px 0 28px rgba(16, 185, 129, 0.5);
+    background: linear-gradient(135deg, var(--color-primary-dark) 0%, #047857 100%);
+}
+
+.right-sidebar-toggle-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+}
+
+/* Right Sidebar Panel */
+.right-sidebar {
+    position: fixed;
+    right: -320px;
+    top: 0;
+    width: 300px;
+    height: 100vh;
+    background: var(--color-white);
+    border-left: 1px solid var(--color-gray-200);
+    z-index: 300;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.12);
+    transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.right-sidebar.open {
+    right: 0;
+}
+
+/* Right Sidebar Header */
+.right-sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 20px 16px;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    color: var(--color-white);
+    flex-shrink: 0;
+}
+
+.right-sidebar-header h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.right-sidebar-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 8px;
+    color: var(--color-white);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    font-family: inherit;
+}
+
+.right-sidebar-close:hover {
+    background: rgba(255, 255, 255, 0.35);
+    transform: scale(1.1);
+}
+
+/* Right Sidebar Body */
+.right-sidebar-body {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.right-sidebar-subtitle {
+    font-size: 0.78rem;
+    color: var(--color-gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    margin-bottom: 4px;
+    padding: 0 4px;
+}
+
+/* Navigation Items */
+.rs-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    background: var(--color-gray-50);
+    border: 1px solid var(--color-gray-100);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+    position: relative;
+    overflow: hidden;
+}
+
+.rs-nav-item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.5) 100%);
+    opacity: 0;
+    transition: opacity var(--transition-base);
+}
+
+.rs-nav-item:hover {
+    transform: translateX(-4px);
+    box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.08);
+    border-color: transparent;
+}
+
+.rs-nav-item:hover::before {
+    opacity: 1;
+}
+
+.rs-nav-item:active {
+    transform: translateX(-2px) scale(0.98);
+}
+
+/* Icon containers */
+.rs-nav-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all var(--transition-base);
+}
+
+.rs-nav-item:hover .rs-nav-icon {
+    transform: scale(1.08);
+}
+
+.rs-green {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(5, 150, 105, 0.06) 100%);
+    color: var(--color-primary);
+}
+
+.rs-nav-item:hover .rs-green {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    color: white;
+}
+
+.rs-blue {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(37, 99, 235, 0.06) 100%);
+    color: #3b82f6;
+}
+
+.rs-nav-item:hover .rs-blue {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+}
+
+.rs-purple {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(124, 58, 237, 0.06) 100%);
+    color: #8b5cf6;
+}
+
+.rs-nav-item:hover .rs-purple {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+}
+
+.rs-orange {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.06) 100%);
+    color: #f59e0b;
+}
+
+.rs-nav-item:hover .rs-orange {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+}
+
+/* Nav Item Text */
+.rs-nav-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.rs-nav-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-gray-800);
+    transition: color var(--transition-fast);
+}
+
+.rs-nav-item:hover .rs-nav-title {
+    color: var(--color-gray-900);
+}
+
+.rs-nav-desc {
+    font-size: 0.75rem;
+    color: var(--color-gray-500);
+    transition: color var(--transition-fast);
+}
+
+.rs-nav-item:hover .rs-nav-desc {
+    color: var(--color-gray-600);
+}
+
+/* Arrow icon */
+.rs-arrow {
+    color: var(--color-gray-300);
+    transition: all var(--transition-base);
+    flex-shrink: 0;
+}
+
+.rs-nav-item:hover .rs-arrow {
+    color: var(--color-gray-500);
+    transform: translateX(3px);
+}
+
+/* Right Sidebar Footer */
+.right-sidebar-footer {
+    padding: 14px 20px;
+    border-top: 1px solid var(--color-gray-100);
+    background: var(--color-gray-50);
+    flex-shrink: 0;
+}
+
+.rs-footer-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-gray-400);
+    font-size: 0.78rem;
+}
+
+/* Right Sidebar Overlay */
+.right-sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 299;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-base);
+    backdrop-filter: blur(2px);
+}
+
+.right-sidebar-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Hide toggle button when sidebar is open */
+.right-sidebar.open~* .right-sidebar-toggle,
+body.right-sidebar-open .right-sidebar-toggle {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .right-sidebar {
+        width: 280px;
+        right: -280px;
+    }
+
+    .right-sidebar-toggle {
+        padding: 10px 8px;
+    }
+
+    .right-sidebar-toggle-label {
+        font-size: 0.6rem;
+    }
+}
+
+/* =====================================================
+   SIDEBAR COLLAPSED — FULL PAGE RESPONSIVENESS
+   Semua layout menyesuaikan saat sidebar buka/tutup
+   ===================================================== */
+
+/*
+ * Saat sidebar terbuka (default):
+ *   main-content margin-left = var(--sidebar-width) = 260px
+ *
+ * Saat sidebar tertutup (body.sidebar-collapsed):
+ *   main-content margin-left = 0 → konten melebar penuh
+ *
+ * Semua grid menggunakan auto-fit/auto-fill sehingga
+ * otomatis reflow saat lebar container berubah.
+ * Blok di bawah ini menangani kasus-kasus khusus.
+ */
+
+/* --- Tablet: sidebar lebih sempit saat collapsed --- */
+@media (min-width: 769px) and (max-width: 1024px) {
+
+    /* Jika sidebar collapsed di tablet, hapus offset lama */
+    body.sidebar-collapsed .main-content {
+        margin-left: 0;
+    }
+
+    /* Saat sidebar terbuka di tablet, gunakan sidebar-width CSS var */
+    body:not(.sidebar-collapsed) .main-content {
+        margin-left: var(--sidebar-width);
+    }
+
+    /* pos-grid: 2 kolom saat sidebar terbuka di tablet */
+    body:not(.sidebar-collapsed) .pos-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Saat sidebar collapsed di tablet → POS bisa 2 kolom */
+    body.sidebar-collapsed .pos-grid {
+        grid-template-columns: 1.5fr 1fr;
+    }
+
+    /* Stats grid: 2 kolom → 3 kolom saat collapsed */
+    body.sidebar-collapsed .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    /* Dashboard grid: 2 kolom saat collapsed di tablet */
+    body.sidebar-collapsed .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* --- Desktop kecil (1025px - 1280px): tambah ruang saat collapsed --- */
+@media (min-width: 1025px) and (max-width: 1280px) {
+
+    /* Sidebar terbuka → stat cards bisa lebih kecil */
+    body:not(.sidebar-collapsed) .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+
+    /* Sidebar collapsed → stat cards lebih lebar */
+    body.sidebar-collapsed .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    /* POS grid lebih proporsional saat sidebar collapsed */
+    body.sidebar-collapsed .pos-grid {
+        grid-template-columns: 1.8fr 1fr;
+    }
+}
+
+/* --- Desktop besar (>1280px) --- */
+@media (min-width: 1281px) {
+
+    /* Saat sidebar collapsed, products-grid lebih banyak kolom */
+    body.sidebar-collapsed .products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+
+    /* POS: lebih ruang untuk area produk */
+    body.sidebar-collapsed .pos-grid {
+        grid-template-columns: 2fr 1fr;
+    }
+
+    /* Stats: lebih lebar */
+    body.sidebar-collapsed .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+}
+
+/* --- Mobile (<= 640px): sidebar selalu collapse, toggle tersembunyi --- */
+@media (max-width: 640px) {
+
+    /* Sembunyikan tombol toggle sidebar di mobile (sudah ada hamburger logic) */
+    .sidebar-toggle-btn {
+        display: none;
+    }
+
+    /* Sidebar mobile: selalu slide dari kiri (override collapsed state) */
+    body.sidebar-collapsed .sidebar {
+        transform: translateX(-100%);
+    }
+
+    /* Main content selalu full width di mobile */
+    body.sidebar-collapsed .main-content {
+        margin-left: 0;
+    }
+
+    body:not(.sidebar-collapsed) .main-content {
+        margin-left: 0;
+    }
+
+    /* Sidebar overlay aktif di mobile saat sidebar terbuka */
+    body:not(.sidebar-collapsed) .sidebar-overlay {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+/* --- Smooth transition untuk semua grid saat sidebar toggle --- */
+.stats-grid,
+.dashboard-grid,
+.pos-grid,
+.products-grid,
+.report-summary {
+    transition: grid-template-columns var(--sidebar-transition);
+}
+
+/* --- Page header tetap flex dan wrap saat ruang sempit --- */
+.page-header {
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+}
+
+/* --- Tabel selalu bisa scroll horizontal --- */
+.table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+}
+
+/* --- Card header: wrap saat konten terlalu banyak --- */
+.card-header {
+    flex-wrap: wrap;
+}
+
+/* --- Sidebar-toggle: sembunyikan saat mobile (handled oleh media query) --- */
+@media (max-width: 640px) {
+    .right-sidebar-toggle {
+        display: none;
+    }
+
+    .right-sidebar-toggle,
+    .sidebar-toggle-btn {
         display: none;
     }
 }

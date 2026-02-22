@@ -1,0 +1,247 @@
+/* ==========================================================
+   RESPONSIVE — Media queries & sidebar-collapsed states
+   Satu tempat untuk semua breakpoint agar mudah dikelola
+   ========================================================== */
+
+/* ===================== GENERAL (max-width: 1024px) ===================== */
+@media (max-width: 1024px) {
+    .pos-grid       { grid-template-columns: 1fr; }
+    .pos-cart       { position: static; }
+    .dashboard-grid { grid-template-columns: 1fr; }
+}
+
+/* ===================== TABLET (769px–1024px) ===================== */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .sidebar { width: 220px; }
+    :root    { --sidebar-width: 220px; }
+
+    body:not(.sidebar-collapsed) .main-content { margin-left: 220px; }
+    body.sidebar-collapsed .main-content        { margin-left: 0; }
+
+    body:not(.sidebar-collapsed) .pos-grid { grid-template-columns: 1fr; }
+    body.sidebar-collapsed .pos-grid        { grid-template-columns: 1.5fr 1fr; }
+
+    body.sidebar-collapsed .stats-grid     { grid-template-columns: repeat(3, 1fr); }
+    body.sidebar-collapsed .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+
+    .stats-grid     { grid-template-columns: repeat(2, 1fr); }
+    .dashboard-grid { grid-template-columns: 1fr; }
+
+    .page-header { flex-wrap: wrap; gap: var(--spacing-md); }
+}
+
+/* ===================== DESKTOP KECIL (1025px–1280px) ===================== */
+@media (min-width: 1025px) and (max-width: 1280px) {
+    body:not(.sidebar-collapsed) .stats-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+    body.sidebar-collapsed       .stats-grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    body.sidebar-collapsed       .pos-grid   { grid-template-columns: 1.8fr 1fr; }
+}
+
+/* ===================== DESKTOP BESAR (>1280px) ===================== */
+@media (min-width: 1281px) {
+    body.sidebar-collapsed .products-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+    body.sidebar-collapsed .pos-grid      { grid-template-columns: 2fr 1fr; }
+    body.sidebar-collapsed .stats-grid    { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+}
+
+/* ===================== DESKTOP FIX (>769px) ===================== */
+@media (min-width: 769px) {
+    body { overflow-x: hidden; }
+
+    #customers-page,
+    #debts-page { padding-right: var(--spacing-md); }
+
+    .page, .page-header, .card { width: 100%; max-width: 100%; }
+}
+
+/* ===================== MOBILE (max-width: 640px) ===================== */
+@media (max-width: 640px) {
+    /* Sembunyikan toggle desktop di mobile */
+    .sidebar-toggle-btn  { display: none; }
+    .right-sidebar-toggle { display: none; }
+
+    /* Sidebar mobile: slide dari kiri */
+    .sidebar {
+        position: fixed;
+        left: -280px;
+        width: 280px;
+        z-index: 1000;
+        transition: left 0.3s ease-in-out;
+        box-shadow: var(--shadow-xl);
+    }
+
+    .sidebar.active      { left: 0; }
+    .hamburger-menu      { display: flex; }
+
+    /* Sidebar collapsed di mobile = transform override */
+    body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
+
+    /* Main content full width */
+    .main-content {
+        margin-left: 0 !important;
+        padding: var(--spacing-lg) var(--spacing-md) var(--spacing-md);
+    }
+
+    /* Show sidebar-overlay dari mobile.js (body.sidebar-open) */
+    body.sidebar-open::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 99;
+        animation: fadeIn var(--transition-fast);
+    }
+
+    /* Layout */
+    .page-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-md);
+        margin-top: var(--spacing-md);
+    }
+    .page-header h2    { font-size: 1.5rem; }
+    .page-header .btn  { width: 100%; justify-content: center; }
+
+    .stats-grid     { grid-template-columns: 1fr; gap: var(--spacing-md); }
+    .dashboard-grid { grid-template-columns: 1fr; }
+
+    .card-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-md);
+    }
+
+    .card-header > div[style*="display: flex"] { flex-wrap: wrap; gap: 0.5rem !important; }
+
+    .products-header { flex-direction: column; }
+    .search-box-enhanced { min-width: 100%; }
+
+    /* Tables */
+    .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { min-width: 600px; }
+    th, td { padding: var(--spacing-sm); font-size: 0.8rem; }
+
+    /* POS */
+    .pos-grid { grid-template-columns: 1fr; }
+    .pos-cart { position: sticky; bottom: 0; max-height: 50vh; }
+    .products-grid { grid-template-columns: repeat(2, 1fr); gap: var(--spacing-sm); }
+    .product-item { padding: var(--spacing-sm); }
+    .product-item h4 { font-size: 0.875rem; }
+    .product-item .price { font-size: 0.95rem; }
+
+    /* Touch-friendly */
+    .btn     { min-height: 44px; padding: var(--spacing-md) var(--spacing-lg); }
+    .btn-icon { width: 44px; height: 44px; }
+    .qty-btn  { min-width: 44px; min-height: 44px; }
+
+    /* Modals */
+    .modal-content { width: 95%; max-width: 95%; margin: var(--spacing-md); }
+    .modal-small   { width: 90%; }
+
+    /* Forms */
+    .form-row { grid-template-columns: 1fr; }
+    .filter-group { flex-direction: column; width: 100%; }
+    .filter-group label, .filter-group input, .filter-group select { width: 100%; }
+
+    /* Select inputs */
+    .select-input { min-width: 140px; flex: 1; }
+
+    /* Page subtitle */
+    .page-subtitle { font-size: 0.8rem; word-wrap: break-word; }
+
+    /* Reports */
+    .report-summary { grid-template-columns: 1fr; }
+
+    /* Customers & Debts */
+    #customers-page .page-header,
+    #debts-page .page-header     { flex-direction: column; align-items: stretch; }
+    #search-customers             { max-width: 100%; }
+    #customers-page .card-header,
+    #debts-page .card-header     { flex-direction: column; align-items: stretch; }
+
+    .debt-filters             { flex-direction: column; }
+    .debt-filters .select-input { width: 100%; min-width: unset; }
+    .debt-summary             { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+    .debt-summary .stat-value { font-size: 1rem; }
+    .summary-item   { padding: 0.65rem; }
+    .summary-value  { font-size: 0.9rem; }
+
+    /* Hide less important table columns on mobile */
+    #customers-page table th:nth-child(3),
+    #customers-page table td:nth-child(3) { display: none; }
+
+    #debts-page table th:nth-child(3),
+    #debts-page table td:nth-child(3)     { display: none; }
+
+    /* Discounts */
+    .discount-controls { flex-direction: column; align-items: stretch; }
+    .discount-manual   { flex-direction: column; align-items: stretch; }
+    .manual-input-group { max-width: 100%; }
+
+    /* Barcode */
+    .modal-scanner        { width: 100%; max-width: 100%; margin: 0; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+    .scanner-container    { min-height: 250px; }
+    .barcode-input-group  { flex-direction: column; }
+    .barcode-input-group .input    { width: 100%; }
+    .barcode-input-group .btn-icon { width: 100%; }
+
+    /* PWA */
+    .install-banner-content { padding: var(--spacing-sm) var(--spacing-md); }
+    .install-banner-icon    { width: 40px; height: 40px; }
+    .install-banner-text strong { font-size: 0.875rem; }
+    .install-banner-text p      { font-size: 0.75rem; }
+}
+
+/* ===================== EXTRA SMALL (max-width: 480px) ===================== */
+@media (max-width: 480px) {
+    .page-header h2 { font-size: 1.25rem; }
+    .stat-value     { font-size: 1.5rem; }
+    .products-grid  { grid-template-columns: 1fr; }
+
+    .stats-grid, .dashboard-grid, .report-summary { grid-template-columns: 1fr; }
+
+    .modal-content {
+        width: 100%;
+        max-height: 90vh;
+        margin: 0;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        animation: slideUp var(--transition-base);
+    }
+
+    .list-item { padding: var(--spacing-sm); }
+    .list-item-content h4 { font-size: 0.85rem; }
+    .list-item-content p  { font-size: 0.75rem; }
+    .list-item-value .badge { font-size: 0.7rem; padding: 0.2rem 0.4rem; }
+
+    .card-header > div[style*="display: flex"] { flex-direction: column; width: 100%; }
+    .select-input { width: 100%; }
+    .debt-summary { grid-template-columns: 1fr !important; }
+    th, td { padding: 0.5rem; font-size: 0.75rem; }
+
+    .table-container::after {
+        content: '';
+        position: absolute;
+        top: 0; right: 0; bottom: 0;
+        width: 20px;
+        background: linear-gradient(to right, transparent, rgba(0,0,0,.05));
+        pointer-events: none;
+    }
+}
+
+/* ===================== EXTRA EXTRA SMALL (max-width: 400px) ===================== */
+@media (max-width: 400px) {
+    .debt-summary { grid-template-columns: 1fr 1fr; }
+
+    #customers-page table th:nth-child(2),
+    #customers-page table td:nth-child(2) { display: none; }
+    #debts-page table th:nth-child(5),
+    #debts-page table td:nth-child(5)     { display: none; }
+}
+
+/* ===================== LANDSCAPE MOBILE ===================== */
+@media (max-width: 640px) and (orientation: landscape) {
+    .main-content { padding-top: var(--spacing-lg); }
+    .modal-content { max-height: 95vh; overflow-y: auto; }
+}

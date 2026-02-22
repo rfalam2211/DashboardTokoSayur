@@ -1,0 +1,20 @@
+/* ==========================================================
+   CSS ENTRY POINT — Import semua modul
+   
+   Urutan import PENTING:
+   1. base      → variabel & reset (harus pertama)
+   2. sidebar   → sidebar kiri
+   3. layout    → main-content & halaman
+   4. components→ card, btn, form, table, modal, toast
+   5. pages     → dashboard, POS, laporan, dll
+   6. right-sidebar → panel kanan
+   7. responsive → media queries (harus terakhir)
+   ========================================================== */
+
+@import url('base.css');
+@import url('sidebar.css');
+@import url('layout.css');
+@import url('components.css');
+@import url('pages.css');
+@import url('right-sidebar.css');
+@import url('responsive.css');

@@ -15,7 +15,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/index.css">
     <!-- Barcode Scanner Library -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <!-- Password Hashing Library -->
@@ -33,7 +33,141 @@
     
     <!-- Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
-    
+<!-- Right Sidebar Toggle Button -->
+<button class="right-sidebar-toggle" id="right-sidebar-toggle" title="Menu Cepat">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+    </svg>
+    <span class="right-sidebar-toggle-label">Menu</span>
+</button>
+
+<!-- Right Sidebar -->
+<aside class="right-sidebar" id="right-sidebar">
+    <div class="right-sidebar-header">
+        <h3>Menu Cepat</h3>
+        <button class="right-sidebar-close" id="right-sidebar-close" title="Tutup">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+        </button>
+    </div>
+
+    <div class="right-sidebar-body">
+        <p class="right-sidebar-subtitle">Akses cepat ke halaman utama</p>
+
+        <!-- Produk -->
+        <button class="rs-nav-item" onclick="navigateToPage('products'); toggleRightSidebar(false)"
+            id="rs-nav-products">
+            <div class="rs-nav-icon rs-green">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M4 4C3.44772 4 3 4.44772 3 5V7C3 7.55228 3.44772 8 4 8H20C20.5523 8 21 7.55228 21 7V5C21 4.44772 20.5523 4 20 4H4Z"
+                        fill="currentColor" />
+                    <path
+                        d="M4 10C3.44772 10 3 10.4477 3 11V19C3 19.5523 3.44772 20 4 20H20C20.5523 20 21 19.5523 21 19V11C21 10.4477 20.5523 10 20 10H4Z"
+                        fill="currentColor" />
+                </svg>
+            </div>
+            <div class="rs-nav-info">
+                <span class="rs-nav-title">Produk</span>
+                <span class="rs-nav-desc">Kelola stok & produk</span>
+            </div>
+            <svg class="rs-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+        </button>
+
+        <!-- Kasir -->
+        <button class="rs-nav-item" onclick="navigateToPage('pos'); toggleRightSidebar(false)" id="rs-nav-kasir">
+            <div class="rs-nav-icon rs-blue">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M3 3C2.44772 3 2 3.44772 2 4V8C2 8.55228 2.44772 9 3 9H21C21.5523 9 22 8.55228 22 8V4C22 3.44772 21.5523 3 21 3H3Z"
+                        fill="currentColor" />
+                    <path
+                        d="M4 11C3.44772 11 3 11.4477 3 12V19C3 19.5523 3.44772 20 4 20H8C8.55228 20 9 19.5523 9 19V12C9 11.4477 8.55228 11 8 11H4Z"
+                        fill="currentColor" />
+                    <path
+                        d="M12 12C12 11.4477 12.4477 11 13 11H20C20.5523 11 21 11.4477 21 12V19C21 19.5523 20.5523 20 20 20H13C12.4477 20 12 19.5523 12 19V12Z"
+                        fill="currentColor" />
+                </svg>
+            </div>
+            <div class="rs-nav-info">
+                <span class="rs-nav-title">Kasir</span>
+                <span class="rs-nav-desc">Proses transaksi</span>
+            </div>
+            <svg class="rs-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+        </button>
+
+        <!-- Transaksi -->
+        <button class="rs-nav-item" onclick="navigateToPage('transactions'); toggleRightSidebar(false)"
+            id="rs-nav-transaksi">
+            <div class="rs-nav-icon rs-purple">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M3 5C3 4.44772 3.44772 4 4 4H20C20.5523 4 21 4.44772 21 5V6C21 6.55228 20.5523 7 20 7H4C3.44772 7 3 6.55228 3 6V5Z"
+                        fill="currentColor" />
+                    <path
+                        d="M3 9C3 8.44772 3.44772 8 4 8H20C20.5523 8 21 8.44772 21 9V10C21 10.5523 20.5523 11 20 11H4C3.44772 11 3 10.5523 3 10V9Z"
+                        fill="currentColor" />
+                    <path
+                        d="M4 12C3.44772 12 3 12.4477 3 13V14C3 14.5523 3.44772 15 4 15H20C20.5523 15 21 14.5523 21 14V13C21 12.4477 20.5523 12 20 12H4Z"
+                        fill="currentColor" />
+                    <path
+                        d="M3 17C3 16.4477 3.44772 16 4 16H12C12.5523 16 13 16.4477 13 17V18C13 18.5523 12.5523 19 12 19H4C3.44772 19 3 18.5523 3 18V17Z"
+                        fill="currentColor" />
+                </svg>
+            </div>
+            <div class="rs-nav-info">
+                <span class="rs-nav-title">Transaksi</span>
+                <span class="rs-nav-desc">Riwayat penjualan</span>
+            </div>
+            <svg class="rs-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+        </button>
+
+        <!-- Laporan -->
+        <button class="rs-nav-item" onclick="navigateToPage('reports'); toggleRightSidebar(false)" id="rs-nav-laporan">
+            <div class="rs-nav-icon rs-orange">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M2 13C2 12.4477 2.44772 12 3 12H6C6.55228 12 7 12.4477 7 13V20C7 20.5523 6.55228 21 6 21H3C2.44772 21 2 20.5523 2 20V13Z"
+                        fill="currentColor" />
+                    <path
+                        d="M9 8C9 7.44772 9.44772 7 10 7H14C14.5523 7 15 7.44772 15 8V20C15 20.5523 14.5523 21 14 21H10C9.44772 21 9 20.5523 9 20V8Z"
+                        fill="currentColor" />
+                    <path
+                        d="M17 3C17 2.44772 17.4477 2 18 2H21C21.5523 2 22 2.44772 22 3V20C22 20.5523 21.5523 21 21 21H18C17.4477 21 17 20.5523 17 20V3Z"
+                        fill="currentColor" />
+                </svg>
+            </div>
+            <div class="rs-nav-info">
+                <span class="rs-nav-title">Laporan</span>
+                <span class="rs-nav-desc">Analisis keuangan</span>
+            </div>
+            <svg class="rs-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+        </button>
+    </div>
+
+    <div class="right-sidebar-footer">
+        <div class="rs-footer-info">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                <path d="M12 8V12M12 16H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+            <span>Klik item untuk navigasi</span>
+        </div>
+    </div>
+</aside>
+
+<!-- Right Sidebar Overlay -->
+<div class="right-sidebar-overlay" id="right-sidebar-overlay"></div>
+
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -167,6 +301,16 @@
             </div>
         </div>
     </aside>
+
+    <!-- Left Sidebar Toggle Button -->
+    <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" title="Buka/Tutup Sidebar" aria-label="Toggle Sidebar">
+        <span class="toggle-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" />
+            </svg>
+        </span>
+    </button>
 
     <!-- Main Content -->
     <main class="main-content">
@@ -1090,31 +1234,150 @@
     <!-- Toast Notification -->
     <div id="toast" class="toast"></div>
 
-    <!-- Scripts -->
-    <script src="js/utils.js"></script>
-    <!-- Supabase must load BEFORE database.js so isOnlineMode() is available -->
-    <script src="js/supabase.js"></script>
-    <script src="js/database.js"></script>
-    <script src="js/auth-v2.js"></script>
-    <script src="js/dashboard.js"></script>
-    <script src="js/products.js"></script>
-    <script src="js/pos.js"></script>
-    <script src="js/transactions.js"></script>
-    <script src="js/reports.js"></script>
-    <script src="js/users.js"></script>
-    <script src="js/discounts.js"></script>
-    <script src="js/customers.js"></script>
-    <script src="js/debts.js"></script>
-    <script src="js/barcode.js"></script>
-    <script src="js/mobile.js"></script>
-    <!-- Phase 6-9 Modules -->
-    <script src="js/activity-log.js"></script>
-    <script src="js/permissions.js"></script>
-    <script src="js/expenses.js"></script>
-    <script src="js/financial-reports.js"></script>
-    <script src="js/receipt-printer.js"></script>
-    <script src="js/backup.js"></script>
-    <script src="js/offline-sync.js"></script>
+    <!-- =====================================================
+             SCRIPTS — Terorganisir berdasarkan fitur
+             ===================================================== -->
+    
+    <!-- CORE: Shared utilities, database, auth -->
+    <script src="js/core/utils.js"></script>
+    <!-- Supabase HARUS load sebelum database.js -->
+    <script src="js/core/supabase.js"></script>
+    <script src="js/core/database.js"></script>
+    <script src="js/core/activity-log.js"></script>
+    <script src="js/core/offline-sync.js"></script>
+    <script src="js/core/backup.js"></script>
+    <script src="js/core/mobile.js"></script>
+    <script src="js/core/mobile-menu.js"></script>
+    
+    <!-- PENGGUNA: Auth, users, permissions -->
+    <script src="js/pengguna/auth-v2.js"></script>
+    <script src="js/pengguna/permissions.js"></script>
+    <script src="js/pengguna/users.js"></script>
+    
+    <!-- DASHBOARD -->
+    <script src="js/dashboard/dashboard.js"></script>
+    
+    <!-- PRODUK: Products, barcode -->
+    <script src="js/produk/products.js"></script>
+    <script src="js/produk/barcode.js"></script>
+    
+    <!-- KASIR: POS, discounts, receipt -->
+    <script src="js/kasir/discounts.js"></script>
+    <script src="js/kasir/receipt-printer.js"></script>
+    <script src="js/kasir/pos.js"></script>
+    
+    <!-- TRANSAKSI: Transactions, customers, debts -->
+    <script src="js/transaksi/customers.js"></script>
+    <script src="js/transaksi/debts.js"></script>
+    <script src="js/transaksi/transactions.js"></script>
+    
+    <!-- LAPORAN: Reports, financial, expenses -->
+    <script src="js/laporan/expenses.js"></script>
+    <script src="js/laporan/financial-reports.js"></script>
+    <script src="js/laporan/reports.js"></script>
     <script src="app.js"></script>
+<!-- Right Sidebar Script -->
+<script>
+    // =====================================================
+    // LEFT SIDEBAR TOGGLE
+    // =====================================================
+    function toggleLeftSidebar(forceCollapse) {
+        const isCollapsed = document.body.classList.contains('sidebar-collapsed');
+        const shouldCollapse = forceCollapse !== undefined ? forceCollapse : !isCollapsed;
+
+        if (shouldCollapse) {
+            document.body.classList.add('sidebar-collapsed');
+            localStorage.setItem('sidebar-collapsed', 'true');
+        } else {
+            document.body.classList.remove('sidebar-collapsed');
+            localStorage.setItem('sidebar-collapsed', 'false');
+        }
+    }
+
+    // Restore left sidebar state from localStorage
+    document.addEventListener('DOMContentLoaded', function () {
+        const savedState = localStorage.getItem('sidebar-collapsed');
+        if (savedState === 'true') {
+            document.body.classList.add('sidebar-collapsed');
+        }
+
+        // Left sidebar toggle button
+        const leftToggleBtn = document.getElementById('sidebar-toggle-btn');
+        if (leftToggleBtn) {
+            leftToggleBtn.addEventListener('click', function () {
+                toggleLeftSidebar();
+            });
+        }
+
+        // Click overlay to close left sidebar (on mobile)
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', function () {
+                toggleLeftSidebar(true);
+            });
+        }
+    });
+
+    // =====================================================
+    // RIGHT SIDEBAR TOGGLE
+    // =====================================================
+    function toggleRightSidebar(forceOpen) {
+        const sidebar = document.getElementById('right-sidebar');
+        const overlay = document.getElementById('right-sidebar-overlay');
+        const toggleBtn = document.getElementById('right-sidebar-toggle');
+
+        const isOpen = sidebar.classList.contains('open');
+        const shouldOpen = forceOpen !== undefined ? forceOpen : !isOpen;
+
+        if (shouldOpen) {
+            sidebar.classList.add('open');
+            overlay.classList.add('active');
+            document.body.classList.add('right-sidebar-open');
+            toggleBtn.style.opacity = '0';
+            toggleBtn.style.pointerEvents = 'none';
+        } else {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+            document.body.classList.remove('right-sidebar-open');
+            toggleBtn.style.opacity = '1';
+            toggleBtn.style.pointerEvents = 'auto';
+        }
+    }
+
+    // Event listeners for right sidebar
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggleBtn = document.getElementById('right-sidebar-toggle');
+        const closeBtn = document.getElementById('right-sidebar-close');
+        const overlay = document.getElementById('right-sidebar-overlay');
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function () {
+                toggleRightSidebar(true);
+            });
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function () {
+                toggleRightSidebar(false);
+            });
+        }
+
+        if (overlay) {
+            overlay.addEventListener('click', function () {
+                toggleRightSidebar(false);
+            });
+        }
+
+        // Close on Escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                const rightSidebar = document.getElementById('right-sidebar');
+                if (rightSidebar && rightSidebar.classList.contains('open')) {
+                    toggleRightSidebar(false);
+                }
+            }
+        });
+    });
+</script>
 </body>
 </html>
