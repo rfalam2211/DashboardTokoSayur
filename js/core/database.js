@@ -51,6 +51,7 @@ async function addProduct(product) {
             price: parseFloat(product.price),
             stock: parseInt(product.stock),
             barcode: product.barcode || null,
+            image_url: product.image_url || null,
             created_at: new Date().toISOString()
         }])
         .select()
@@ -66,7 +67,7 @@ async function getAllProducts() {
         .select('*')
         .order('name');
     if (error) throw error;
-    return data.map(p => ({ ...p, createdAt: p.created_at, updatedAt: p.updated_at }));
+    return data.map(p => ({ ...p, imageUrl: p.image_url || null, createdAt: p.created_at, updatedAt: p.updated_at }));
 }
 
 async function getProduct(id) {

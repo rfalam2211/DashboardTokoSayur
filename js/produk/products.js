@@ -174,6 +174,8 @@ function openProductModal(product = null) {
         document.getElementById('product-price').value = product.price;
         document.getElementById('product-stock').value = product.stock;
         document.getElementById('product-barcode').value = product.barcode || '';
+        const imgInput = document.getElementById('product-image-url');
+        if (imgInput) imgInput.value = product.image_url || product.imageUrl || '';
         editingProductId = product.id;
     } else {
         title.textContent = 'Tambah Produk';
@@ -210,7 +212,8 @@ async function handleProductSubmit(e) {
         category: document.getElementById('product-category').value,
         price: document.getElementById('product-price').value,
         stock: document.getElementById('product-stock').value,
-        barcode: document.getElementById('product-barcode').value.trim() || null
+        barcode: document.getElementById('product-barcode').value.trim() || null,
+        image_url: (document.getElementById('product-image-url')?.value || '').trim() || null
     };
 
     try {

@@ -368,11 +368,14 @@
             try {
                 const user = await login(username, password);
                 if (user) {
+                    loginBtn.textContent = '✓ Berhasil! Mengarahkan...';
                     window.location.href = 'index.html';
                 } else {
+                    alertEl.innerHTML = '<strong>Login Gagal!</strong> Username atau password salah.';
                     alertEl.classList.add('show');
                     document.getElementById('username').classList.add('error');
                     document.getElementById('password').classList.add('error');
+                    document.getElementById('password').value = '';
                     setTimeout(() => {
                         document.getElementById('username').classList.remove('error');
                         document.getElementById('password').classList.remove('error');
@@ -380,11 +383,18 @@
                 }
             } catch (error) {
                 console.error('Login error:', error);
+                const msg = error?.message || '';
+                if (msg.includes('fetch') || msg.includes('NetworkError') || !navigator.onLine) {
+                    alertEl.innerHTML = '<strong>Koneksi Gagal!</strong> Tidak dapat terhubung ke server. Cek koneksi internet Anda.';
+                } else {
+                    alertEl.innerHTML = '<strong>Terjadi Kesalahan!</strong> ' + (msg || 'Silakan coba lagi.');
+                }
                 alertEl.classList.add('show');
             } finally {
                 loginBtn.disabled = false;
                 loginBtn.textContent = 'Masuk';
             }
+
         });
 
         // Clear error on input

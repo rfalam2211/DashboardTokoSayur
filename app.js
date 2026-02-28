@@ -44,6 +44,44 @@ async function initApp() {
         // Load user info
         loadUserInfo();
 
+        // Initialize online/offline indicator
+        if (typeof initOnlineStatus === 'function') {
+            initOnlineStatus();
+        }
+        // Set initial state
+        const indicator = document.getElementById('online-indicator');
+        if (indicator) {
+            const isOnline = navigator.onLine;
+            indicator.textContent = isOnline ? '🟢 Online' : '🔴 Offline';
+            indicator.className = 'online-indicator ' + (isOnline ? 'online' : 'offline');
+        }
+
+        // Init Supabase Realtime subscriptions (products + transactions)
+        if (typeof initRealtimeSync === 'function') {
+            setTimeout(() => initRealtimeSync(['products', 'transactions', 'debts']), 1500);
+        }
+
+        // Check overdue debts and show notifications (5s delay)
+        if (typeof initDebtNotifications === 'function') {
+            setTimeout(() => initDebtNotifications(), 5000);
+        }
+
+        // Listen for realtime changes → refresh current page if relevant
+        window.addEventListener('supabase-realtime', (e) => {
+            const { table } = e.detail;
+            const refreshMap = {
+                products: ['products', 'pos', 'dashboard'],
+                transactions: ['transactions', 'dashboard', 'reports'],
+                debts: ['debts', 'customers']
+            };
+            const pagesToRefresh = refreshMap[table] || [];
+            if (pagesToRefresh.includes(currentPage)) {
+                console.log(`[Realtime] Auto-refreshing ${currentPage} due to ${table} change`);
+                // Re-init the active page silently
+                navigateToPage(currentPage).catch(() => { });
+            }
+        });
+
         // Setup navigation
         setupNavigation();
 
@@ -58,13 +96,19 @@ async function initApp() {
         const firstPage = allowedPages.length > 0 ? allowedPages[0] : 'pos';
         await navigateToPage(firstPage);
 
-        console.log('Application initialized successfully (Supabase Cloud)');
+        console.log('Application initialized successfully (Supabase Cloud + Realtime)');
 
     } catch (error) {
         console.error('Error initializing application:', error);
-        showToast('Gagal menginisialisasi aplikasi', 'error');
+        const msg = error?.message || '';
+        if (msg.includes('fetch') || msg.includes('network') || !navigator.onLine) {
+            showToast('Tidak ada koneksi internet. Beberapa fitur mungkin tidak tersedia.', 'warning');
+        } else {
+            showToast('Gagal menginisialisasi aplikasi: ' + msg, 'error');
+        }
     }
 }
+
 
 /**
  * Load user info to sidebar
@@ -234,7 +278,17 @@ async function navigateToPage(pageName) {
         }
     } catch (error) {
         console.error(`Error initializing ${pageName} page:`, error);
-        showToast(`Gagal memuat halaman ${pageName}`, 'error');
+        const msg = error?.message || '';
+        let userMsg = `Gagal memuat halaman. `;
+        if (msg.includes('fetch') || msg.includes('NetworkError') || !navigator.onLine) {
+            userMsg += 'Cek koneksi internet Anda.';
+        } else if (msg.includes('JWT') || msg.includes('auth')) {
+            userMsg += 'Sesi berakhir, silakan login ulang.';
+            setTimeout(() => { window.location.href = 'login.html'; }, 2000);
+        } else {
+            userMsg += msg.substring(0, 80);
+        }
+        showToast(userMsg, 'error');
     }
 }
 

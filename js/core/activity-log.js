@@ -1,155 +1,226 @@
-// Activity Logging Module
+// ============================================================
+// ACTIVITY-LOG.JS — Activity logging via Supabase
+// Catatan: tabel 'activity_logs' harus ada di Supabase.
+// Jika tabel belum ada, log akan disimpan di localStorage saja.
+// ============================================================
+
+const _LOG_LOCAL_KEY = 'ida_activity_logs_local';
+const _LOG_MAX_LOCAL = 200; // Max log disimpan di localStorage
 
 /**
- * Log an activity
- * @param {string} module - Module name (products, users, pos, etc.)
- * @param {string} action - Action performed (create, update, delete, login, logout)
- * @param {object} details - Additional details about the action
+ * Log sebuah aktivitas pengguna.
+ * Tidak akan throw error — logging tidak boleh break aplikasi.
  */
 async function logActivity(module, action, details = {}) {
     try {
-        const currentUser = getCurrentUser();
-        
-        if (!currentUser) {
-            console.warn('No user logged in, skipping activity log');
-            return;
-        }
-
+        const currentUser = getCurrentUser?.();
         const log = {
-            id: 'log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-            userId: currentUser.id,
-            userName: currentUser.name,
-            module: module,
-            action: action,
-            details: details,
-            timestamp: new Date().toISOString()
+            id: 'log_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 7),
+            user_id: currentUser?.id || null,
+            user_name: currentUser?.name || 'System',
+            module,
+            action,
+            details: typeof details === 'object' ? JSON.stringify(details) : String(details),
+            created_at: new Date().toISOString()
         };
 
-        await addActivityLog(log);
-    } catch (error) {
-        console.error('Error logging activity:', error);
-        // Don't throw error - logging should not break the app
+        // Simpan ke Supabase jika tersedia
+        if (window._supabaseClient) {
+            const { error } = await window._supabaseClient
+                .from('activity_logs')
+                .insert([log]);
+
+            if (error) {
+                // Tabel mungkin belum ada — fallback ke localStorage
+                if (error.code === '42P01' || error.message?.includes('does not exist')) {
+                    console.info('[ActivityLog] Tabel activity_logs belum ada, fallback ke localStorage');
+                    _saveLogLocal(log);
+                } else {
+                    console.warn('[ActivityLog] Gagal log ke Supabase:', error.message);
+                    _saveLogLocal(log);
+                }
+            }
+        } else {
+            // Simpan ke localStorage sebagai fallback
+            _saveLogLocal(log);
+        }
+    } catch (err) {
+        // Never throw — logging is best-effort
+        console.warn('[ActivityLog] Error:', err.message);
     }
 }
 
 /**
- * Add activity log to database
+ * Simpan log ke localStorage sebagai fallback
  */
-function addActivityLog(log) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['activityLogs'], 'readwrite');
-        const store = transaction.objectStore('activityLogs');
-        const request = store.add(log);
-
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
+function _saveLogLocal(log) {
+    try {
+        const existing = JSON.parse(localStorage.getItem(_LOG_LOCAL_KEY) || '[]');
+        existing.unshift(log);
+        if (existing.length > _LOG_MAX_LOCAL) existing.length = _LOG_MAX_LOCAL;
+        localStorage.setItem(_LOG_LOCAL_KEY, JSON.stringify(existing));
+    } catch {
+        // ignore storage errors
+    }
 }
 
 /**
- * Get all activity logs
- * @param {object} filters - Optional filters {userId, module, action, startDate, endDate}
+ * Ambil semua activity logs (dari Supabase atau localStorage)
  */
-function getAllActivityLogs(filters = {}) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['activityLogs'], 'readonly');
-        const store = transaction.objectStore('activityLogs');
-        const request = store.getAll();
+async function getAllActivityLogs(filters = {}) {
+    try {
+        if (window._supabaseClient) {
+            let query = window._supabaseClient
+                .from('activity_logs')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(500);
 
-        request.onsuccess = () => {
-            let logs = request.result;
+            if (filters.userId) query = query.eq('user_id', filters.userId);
+            if (filters.module) query = query.eq('module', filters.module);
+            if (filters.action) query = query.eq('action', filters.action);
+            if (filters.startDate) query = query.gte('created_at', filters.startDate);
+            if (filters.endDate) query = query.lte('created_at', filters.endDate);
 
-            // Apply filters
-            if (filters.userId) {
-                logs = logs.filter(log => log.userId === filters.userId);
-            }
-            if (filters.module) {
-                logs = logs.filter(log => log.module === filters.module);
-            }
-            if (filters.action) {
-                logs = logs.filter(log => log.action === filters.action);
-            }
-            if (filters.startDate) {
-                logs = logs.filter(log => new Date(log.timestamp) >= new Date(filters.startDate));
-            }
-            if (filters.endDate) {
-                logs = logs.filter(log => new Date(log.timestamp) <= new Date(filters.endDate));
+            const { data, error } = await query;
+
+            if (error) {
+                // Tabel belum ada → kembalikan dari localStorage
+                if (error.code === '42P01') {
+                    return _getLogsLocal(filters);
+                }
+                throw error;
             }
 
-            // Sort by timestamp descending (newest first)
-            logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            return data.map(l => ({
+                ...l,
+                userId: l.user_id,
+                userName: l.user_name,
+                timestamp: l.created_at,
+                details: _parseDetails(l.details)
+            }));
+        }
 
-            resolve(logs);
-        };
-        request.onerror = () => reject(request.error);
-    });
+        return _getLogsLocal(filters);
+    } catch (err) {
+        console.error('[ActivityLog] getAllActivityLogs error:', err);
+        return _getLogsLocal(filters);
+    }
+}
+
+function _getLogsLocal(filters = {}) {
+    try {
+        let logs = JSON.parse(localStorage.getItem(_LOG_LOCAL_KEY) || '[]');
+        if (filters.module) logs = logs.filter(l => l.module === filters.module);
+        if (filters.action) logs = logs.filter(l => l.action === filters.action);
+        return logs;
+    } catch {
+        return [];
+    }
+}
+
+function _parseDetails(details) {
+    if (!details) return {};
+    if (typeof details === 'object') return details;
+    try { return JSON.parse(details); } catch { return { raw: details }; }
 }
 
 /**
- * Delete old activity logs (older than specified days)
- * @param {number} days - Number of days to keep
+ * Hapus log lama (lebih dari N hari) dari Supabase
  */
 async function cleanupOldLogs(days = 90) {
     try {
-        const cutoffDate = new Date();
-        cutoffDate.setDate(cutoffDate.getDate() - days);
+        if (!window._supabaseClient) return 0;
 
-        const allLogs = await getAllActivityLogs();
-        const oldLogs = allLogs.filter(log => new Date(log.timestamp) < cutoffDate);
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - days);
 
-        const transaction = db.transaction(['activityLogs'], 'readwrite');
-        const store = transaction.objectStore('activityLogs');
+        const { data, error } = await window._supabaseClient
+            .from('activity_logs')
+            .delete()
+            .lt('created_at', cutoff.toISOString())
+            .select();
 
-        for (const log of oldLogs) {
-            store.delete(log.id);
+        if (error) {
+            if (error.code === '42P01') return 0; // tabel belum ada
+            throw error;
         }
 
-        return oldLogs.length;
-    } catch (error) {
-        console.error('Error cleaning up old logs:', error);
-        throw error;
+        console.log(`[ActivityLog] Deleted ${data?.length || 0} old logs`);
+        return data?.length || 0;
+    } catch (err) {
+        console.error('[ActivityLog] cleanupOldLogs error:', err);
+        return 0;
     }
 }
 
 /**
- * Export activity logs to CSV
+ * Export activity logs ke CSV
  */
 async function exportActivityLogs(filters = {}) {
     try {
         const logs = await getAllActivityLogs(filters);
-        
+
         if (logs.length === 0) {
             showToast('Tidak ada log untuk diekspor', 'warning');
             return;
         }
 
-        // Create CSV content
         const headers = ['Timestamp', 'User', 'Module', 'Action', 'Details'];
         const rows = logs.map(log => [
-            formatDateTime(log.timestamp),
-            log.userName,
-            log.module,
-            log.action,
-            JSON.stringify(log.details)
+            log.created_at || log.timestamp || '',
+            log.user_name || log.userName || '',
+            log.module || '',
+            log.action || '',
+            typeof log.details === 'object' ? JSON.stringify(log.details) : String(log.details || '')
         ]);
 
-        let csvContent = headers.join(',') + '\n';
-        rows.forEach(row => {
-            csvContent += row.map(cell => `"${cell}"`).join(',') + '\n';
-        });
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','))
+        ].join('\n');
 
-        // Download CSV
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `activity_logs_${new Date().toISOString().split('T')[0]}.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
+        const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `activity_logs_${new Date().toISOString().split('T')[0]}.csv`;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
 
-        showToast('Log berhasil diekspor', 'success');
-    } catch (error) {
-        console.error('Error exporting logs:', error);
+        showToast(`${logs.length} log berhasil diekspor`, 'success');
+    } catch (err) {
+        console.error('[ActivityLog] exportActivityLogs error:', err);
         showToast('Gagal mengekspor log', 'error');
     }
 }
+
+/**
+ * Flush log lokal ke Supabase 
+ * (panggil ini saat kembali online)
+ */
+async function flushLocalLogs() {
+    if (!window._supabaseClient) return;
+
+    const localLogs = _getLogsLocal();
+    if (localLogs.length === 0) return;
+
+    try {
+        const { error } = await window._supabaseClient
+            .from('activity_logs')
+            .upsert(localLogs, { onConflict: 'id', ignoreDuplicates: true });
+
+        if (!error) {
+            localStorage.removeItem(_LOG_LOCAL_KEY);
+            console.log(`[ActivityLog] Flushed ${localLogs.length} local logs to Supabase`);
+        }
+    } catch (err) {
+        console.warn('[ActivityLog] flushLocalLogs failed:', err.message);
+    }
+}
+
+// Flush local logs saat online kembali
+window.addEventListener('online', () => {
+    setTimeout(flushLocalLogs, 3000);
+});

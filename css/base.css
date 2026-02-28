@@ -132,3 +132,118 @@ body {
         padding-bottom: calc(var(--spacing-xl) + env(safe-area-inset-bottom));
     }
 }
+
+/* ============================================================
+   DARK MODE — aktif via body.dark-mode
+   ============================================================ */
+body.dark-mode {
+    /* Override semua color tokens */
+    --color-white: #1e2433;
+    --color-gray-50: #252d3d;
+    --color-gray-100: #2d3748;
+    --color-gray-200: #374151;
+    --color-gray-300: #4b5563;
+    --color-gray-400: #6b7280;
+    --color-gray-500: #9ca3af;
+    --color-gray-600: #d1d5db;
+    --color-gray-700: #e5e7eb;
+    --color-gray-800: #f3f4f6;
+    --color-gray-900: #f9fafb;
+
+    /* Shadows darker */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.5);
+
+    background: linear-gradient(135deg, #111827 0%, #0f172a 100%);
+    color: var(--color-gray-800);
+}
+
+/* Dark mode specific adjustments */
+body.dark-mode .card {
+    background: #1e2433;
+    border-color: #2d3748;
+}
+
+body.dark-mode .sidebar {
+    background: #161b2b;
+    border-color: #2d3748;
+}
+
+body.dark-mode .modal-content {
+    background: #1e2433;
+}
+
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+    background: #252d3d;
+    color: var(--color-gray-800);
+    border-color: #374151;
+}
+
+body.dark-mode input::placeholder {
+    color: #6b7280;
+}
+
+body.dark-mode .btn-secondary {
+    background: #252d3d;
+    color: #e5e7eb;
+    border-color: #374151;
+}
+
+body.dark-mode .btn-secondary:hover {
+    background: #2d3748;
+}
+
+body.dark-mode table thead {
+    background: #252d3d;
+}
+
+body.dark-mode tbody tr:hover {
+    background: #252d3d;
+}
+
+body.dark-mode .right-sidebar {
+    background: #161b2b;
+    border-color: #2d3748;
+}
+
+body.dark-mode .nav-item {
+    color: #9ca3af;
+}
+
+body.dark-mode .nav-item:hover {
+    background: #252d3d;
+}
+
+body.dark-mode .nav-item.active {
+    background: rgba(16, 185, 129, 0.15);
+}
+
+body.dark-mode .stat-card {
+    background: #1e2433;
+}
+
+body.dark-mode .sync-panel {
+    background: #252d3d;
+    border-color: #374151;
+}
+
+body.dark-mode .toast {
+    background: #374151;
+}
+
+body.dark-mode ::-webkit-scrollbar-track {
+    background: #252d3d;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb {
+    background: #4b5563;
+}
+
+/* Dark mode transition */
+body {
+    transition: background 0.3s ease, color 0.3s ease;
+}

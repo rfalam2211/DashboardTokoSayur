@@ -1,15 +1,224 @@
-// Receipt Printer Module
+// ============================================================
+// RECEIPT PRINTER — Generate, preview & print struk
+// ============================================================
+
+// Load settings from localStorage (override defaults)
+const RECEIPT_SETTINGS = (() => {
+    const defaults = {
+        storeName: 'Ida Buah',
+        storeAddress: 'Jl. Buah Segar No. 1, Jakarta',
+        storePhone: '08123456789',
+        footerMessage: 'Terima kasih atas kunjungan Anda! 🥬',
+        paperSize: '80mm'
+    };
+    try {
+        const saved = localStorage.getItem('receipt_settings');
+        return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
+    } catch {
+        return defaults;
+    }
+})();
 
 /**
- * Store settings for receipt
+ * Generate receipt HTML string
  */
-const RECEIPT_SETTINGS = {
-    storeName: 'Ida Buah',
-    storeAddress: 'Jl. Contoh No. 123, Jakarta',
-    storePhone: '08123456789',
-    footerMessage: 'Terima kasih atas kunjungan Anda!',
-    paperSize: '80mm' // 58mm or 80mm
-};
+function generateReceiptHTML(transaction) {
+    // Use formatDate from utils.js — formatDateTime doesn't exist
+    const receiptDate = (typeof formatDate === 'function')
+        ? formatDate(transaction.date || transaction.created_at, true)
+        : new Date(transaction.date || transaction.created_at).toLocaleString('id-ID');
+
+    const items = transaction.items || [];
+    const itemsHTML = items.map(item => {
+        const itemTotal = (item.price || 0) * (item.quantity || 1);
+        const itemDiscount = item.discount || 0;
+        const itemFinal = itemTotal - itemDiscount;
+        return `
+            <tr>
+                <td>${escapeHtml ? escapeHtml(item.name) : item.name}</td>
+                <td class="right">${item.quantity}</td>
+                <td class="right">${formatCurrency(item.price)}</td>
+                <td class="right">${formatCurrency(itemFinal)}</td>
+            </tr>
+            ${itemDiscount > 0 ? `
+            <tr class="disc">
+                <td colspan="3" class="right">Diskon:</td>
+                <td class="right">-${formatCurrency(itemDiscount)}</td>
+            </tr>` : ''}
+        `;
+    }).join('');
+
+    const cashier = transaction.cashier_name || transaction.cashier
+        || (typeof getCurrentUser === 'function' ? getCurrentUser()?.name : null)
+        || '—';
+
+    return `<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Struk #${transaction.id}</title>
+    <style>
+        @page { margin: 0; size: ${RECEIPT_SETTINGS.paperSize} auto; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 11px;
+            width: ${RECEIPT_SETTINGS.paperSize === '58mm' ? '58mm' : '80mm'};
+            margin: 0 auto;
+            padding: 8px;
+            color: #000;
+            background: #fff;
+        }
+        .center { text-align: center; }
+        .right   { text-align: right; }
+        .bold    { font-weight: bold; }
+        .line    { border-top: 1px dashed #000; margin: 6px 0; }
+        .double  { border-top: 2px solid #000;  margin: 6px 0; }
+        h1 { font-size: 15px; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; }
+        th { font-size: 10px; text-align: left; border-bottom: 1px solid #000; padding: 3px 0; }
+        th.right { text-align: right; }
+        td { padding: 2px 0; font-size: 11px; vertical-align: top; }
+        .disc { font-size: 10px; color: #555; }
+        .total-row { display: flex; justify-content: space-between; margin: 2px 0; }
+        .grand { font-size: 13px; font-weight: bold; padding: 4px 0; }
+        .footer { font-size: 9px; text-align: center; padding-top: 6px; color: #333; }
+    </style>
+</head>
+<body>
+    <div class="center">
+        <h1>${RECEIPT_SETTINGS.storeName}</h1>
+        <div>${RECEIPT_SETTINGS.storeAddress}</div>
+        <div>Telp: ${RECEIPT_SETTINGS.storePhone}</div>
+    </div>
+    <div class="line"></div>
+    <div>No: #${transaction.id}</div>
+    <div>Tgl: ${receiptDate}</div>
+    <div>Kasir: ${cashier}</div>
+    <div class="line"></div>
+    <table>
+        <thead>
+            <tr>
+                <th>Nama</th>
+                <th class="right">Qty</th>
+                <th class="right">Harga</th>
+                <th class="right">Total</th>
+            </tr>
+        </thead>
+        <tbody>${itemsHTML}</tbody>
+    </table>
+    <div class="line"></div>
+    <div class="total-row"><span>Subtotal:</span><span>${formatCurrency(transaction.subtotal || transaction.total)}</span></div>
+    ${(transaction.discount > 0) ? `<div class="total-row"><span>Diskon:</span><span>-${formatCurrency(transaction.discount)}</span></div>` : ''}
+    ${(transaction.tax > 0) ? `<div class="total-row"><span>Pajak:</span><span>${formatCurrency(transaction.tax)}</span></div>` : ''}
+    <div class="double"></div>
+    <div class="total-row grand"><span>TOTAL:</span><span>${formatCurrency(transaction.total)}</span></div>
+    <div class="line"></div>
+    <div class="total-row"><span>Bayar (${transaction.payment_method || transaction.paymentMethod || 'Tunai'}):</span><span>${formatCurrency(transaction.paid || transaction.total)}</span></div>
+    ${transaction.change > 0 ? `<div class="total-row"><span>Kembalian:</span><span>${formatCurrency(transaction.change)}</span></div>` : ''}
+    <div class="line"></div>
+    <div class="footer">
+        <div>${RECEIPT_SETTINGS.footerMessage}</div>
+        <div style="margin-top:4px;">Barang yang sudah dibeli tidak dapat dikembalikan.</div>
+    </div>
+</body>
+</html>`;
+}
+
+/**
+ * Print receipt (opens print dialog)
+ */
+function printReceipt(transaction) {
+    try {
+        const html = generateReceiptHTML(transaction);
+        const win = window.open('', '_blank', 'width=380,height=680,scrollbars=no,menubar=no,toolbar=no');
+
+        if (!win) {
+            showToast('⚠️ Popup diblokir. Izinkan popup untuk mencetak struk.', 'warning');
+            return;
+        }
+
+        win.document.open();
+        win.document.write(html);
+        win.document.close();
+
+        win.onload = () => {
+            win.focus();
+            win.print();
+            setTimeout(() => win.close(), 500);
+        };
+
+        try { logActivity('pos', 'print_receipt', { transactionId: transaction.id }); } catch { }
+    } catch (err) {
+        console.error('[Receipt] printReceipt error:', err);
+        showToast('Gagal mencetak struk', 'error');
+    }
+}
+
+/**
+ * Download struk as PDF via browser print-to-PDF
+ * (No external library needed — piggybacks on browser PDF print)
+ */
+function downloadReceiptPDF(transaction) {
+    try {
+        const html = generateReceiptHTML(transaction);
+
+        // Tambahkan instruksi print ke PDF di judul
+        const pdfHtml = html.replace(
+            '<title>',
+            `<script>
+                window.onload = function() {
+                    window.onafterprint = function() { window.close(); };
+                    window.print();
+                };
+            <\/script><title>PDF — `
+        );
+
+        const win = window.open('', '_blank', 'width=380,height=680');
+        if (!win) {
+            showToast('Popup diblokir. Izinkan popup untuk export PDF.', 'warning');
+            return;
+        }
+
+        win.document.open();
+        win.document.write(pdfHtml);
+        win.document.close();
+
+        showToast('💡 Pilih "Save as PDF" di dialog print', 'info');
+    } catch (err) {
+        console.error('[Receipt] downloadReceiptPDF error:', err);
+        showToast('Gagal export PDF', 'error');
+    }
+}
+
+/**
+ * Preview struk di modal sebelum print
+ */
+function previewReceipt(transaction) {
+    const html = generateReceiptHTML(transaction);
+
+    // Tampilkan di iframe di dalam modal jika ada, atau buka popup
+    const previewModal = document.getElementById('receipt-preview-modal');
+    const previewFrame = document.getElementById('receipt-preview-frame');
+
+    if (previewModal && previewFrame) {
+        previewFrame.srcdoc = html;
+        previewModal.classList.add('active');
+    } else {
+        // Fallback: langsung buka di popup
+        printReceipt(transaction);
+    }
+}
+
+/**
+ * Update receipt settings
+ */
+function updateReceiptSettings(settings) {
+    Object.assign(RECEIPT_SETTINGS, settings);
+    localStorage.setItem('receipt_settings', JSON.stringify(RECEIPT_SETTINGS));
+    showToast('Pengaturan struk disimpan', 'success');
+}
+
 
 /**
  * Generate receipt HTML
