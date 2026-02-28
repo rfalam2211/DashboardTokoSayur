@@ -1,280 +1,293 @@
-# 🏪 Ida Buah - Offline Store Management App
+# 🥬 Ida Buah — Store Management System
 
-A modern, feature-rich Progressive Web App (PWA) for small to medium-sized businesses. Built with vanilla HTML, CSS, and JavaScript, this app works completely offline using IndexedDB for local data storage and can be installed on Android devices for a native app experience.
+A modern **Progressive Web App (PWA)** for managing a small grocery/fruit store. Built with vanilla HTML, CSS, and JavaScript — powered by **Supabase cloud database** with real-time multi-device sync, offline queue, and full PWA installation support.
 
-## ✨ Features
+> **Live Database**: Supabase Cloud (PostgreSQL)  
+> **Version**: 9.0.0  
+> **Last Updated**: 1 Maret 2026  
 
-### 📱 Mobile-First & PWA
-- **Installable App**: Install on Android home screen for native app experience
-- **Fully Responsive**: Optimized for mobile, tablet, and desktop
-- **Touch-Optimized**: Touch-friendly buttons and gestures
-- **Offline-First**: Works completely offline with service worker caching
-- **Hamburger Navigation**: Swipe-to-open sidebar on mobile
-- **Pull-to-Refresh**: Refresh data with pull gesture
+---
+
+## ✨ Fitur Lengkap
+
+### 📱 PWA & Mobile-First
+- **Installable** — install di Android/iOS/Desktop seperti native app
+- **Fully Responsive** — mobile, tablet, desktop
+- **Offline Queue** — aksi saat offline akan otomatis di-sync saat online kembali
+- **Service Worker v6** — caching stale-while-revalidate untuk semua file statis
+- **Dark Mode** — toggle 🌙/☀️ di sidebar, mengikuti preferensi OS secara otomatis
 
 ### 📊 Dashboard
-- Real-time overview of store performance
-- Key metrics: total products, today's sales, total revenue, net profit
-- Low stock alerts
-- Recent transactions overview
-- Quick access to all modules
+- Summary harian: total produk, penjualan hari ini, pendapatan, laba bersih
+- Peringatan stok menipis
+- Ringkasan transaksi terbaru
+- Akses cepat ke semua modul
 
-### 📦 Product Management
-- **Add Products**: Create products with name, price, stock, category, and barcode
-- **Edit Products**: Update product information
-- **Delete Products**: Remove products from inventory
-- **Search & Filter**: Quickly find products by name or category
-- **Stock Tracking**: Monitor inventory levels in real-time
-- **Barcode Support**: Ready for barcode scanning integration
+### 📦 Manajemen Produk
+- Tambah / edit / hapus produk
+- Field: nama, harga, stok, kategori, barcode, URL gambar
+- Pencarian & filter kategori
+- Scan barcode via kamera (html5-qrcode)
+- QR Code otomatis untuk setiap produk di katalog
 
 ### 💰 Point of Sale (POS)
-- Fast and intuitive sales interface
-- Product search and selection
-- Barcode scanning ready
-- Quantity adjustment
-- Real-time total calculation
-- Multiple payment methods (Cash, Transfer, QRIS)
-- Transaction processing
-- Receipt generation
+- Interface kasir yang cepat dan intuitif
+- Pencarian produk + scan barcode
+- Penyesuaian kuantitas
+- Kalkulasi total real-time
+- Sistem diskon (persentase / nominal, per produk / per transaksi)
+- Metode pembayaran: Tunai, Transfer, QRIS
+- **Cetak struk** (thermal 58mm / 80mm)
+- **Export struk PDF** via browser print
 
-### 📝 Transaction History
-- Complete record of all sales transactions
-- Transaction details: date, time, items, quantities, total amount
-- Date range filtering
-- Export to CSV
-- Transaction summary
+### 📝 Riwayat Transaksi
+- Riwayat lengkap semua transaksi
+- Filter rentang tanggal
+- Export ke CSV (BOM-encoded, aman untuk Excel)
 
-### 📈 Financial Reports
-- Daily, weekly, and monthly sales reports
-- Revenue and expense tracking
-- Profit/loss calculations
-- Sales analytics
-- Export capabilities
+### 📈 Laporan Keuangan
+- Laporan harian / mingguan / bulanan / custom
+- Pendapatan, pengeluaran, dan laba/rugi
+- **Export PDF** — generate laporan terformat, buka print dialog
+- **Export CSV** — gabungan transaksi + pengeluaran + summary baris
 
-### 👥 User Management
-- Multi-user support with role-based access
-- Admin and Cashier roles
-- User authentication
-- Secure login system
+### 👥 Manajemen Pelanggan & Hutang
+- Data pelanggan tersimpan di cloud
+- Pencatatan hutang/kredit per pelanggan
+- **Notifikasi badge merah** di sidebar jika ada hutang jatuh tempo
+- **Push Notification** via Service Worker saat startup
+- Riwayat pembayaran hutang
 
-### 🆕 Coming Soon
-- **Barcode Scanning**: Camera-based barcode scanning for quick product lookup
-- **Discount System**: Flexible discount management (percentage/fixed, product-specific)
-- **Public Stock Catalogue**: Shareable product catalogue for customers
-- **Debt Management**: Customer credit tracking with payment reminders
-- **Customer Management**: Store customer information and purchase history
+### 👤 Manajemen Pengguna
+- Multi-user dengan role-based access control
+- Role: **Admin** (akses penuh) dan **Kasir** (akses terbatas)
+- Autentikasi dengan bcrypt password hashing
+- Sesi tersimpan aman
 
-## 🎨 Design
+### 🌐 Katalog Publik (`catalogue.html`)
+- Halaman katalog yang bisa dibagikan ke pelanggan
+- Tampilkan foto produk, harga, stok
+- Filter kategori dinamis
+- QR Code untuk share link katalog
+- Share via WhatsApp, copy link, native share API
 
-- **Color Scheme**: Modern green and white theme (#10b981)
-- **User Experience**: Intuitive and easy to navigate
-- **Responsive Design**: Mobile-first approach with breakpoints for all devices
-- **Touch-Friendly**: Minimum 44x44px touch targets
-- **Accessibility**: High contrast mode and reduced motion support
-- **Modern UI**: Smooth animations and transitions
+### ☁️ Cloud Sync & Realtime
+- **Supabase Realtime** — data antar device sinkron otomatis (products, transactions, debts)
+- **Offline Queue** — operasi saat offline disimpan dan di-push saat kembali online
+- **Sync Status Panel** di sidebar: badge Tersinkron / Menunggu / Syncing / Offline + waktu terakhir sync
+- **Manual Sync** — tombol 🔄 untuk force sync kapan saja
 
-## 🚀 Getting Started
+### 📋 Activity Log
+- Log semua aksi pengguna (login, tambah/edit/hapus, backup, dsb.)
+- Disimpan di Supabase, fallback localStorage jika offline
+- Auto-flush ke Supabase saat kembali online
+- Export log ke CSV
 
-### Prerequisites
-- A modern web browser (Chrome, Firefox, Edge, Safari)
-- No server or internet connection required!
+### 💾 Backup & Restore
+- Export semua data ke file JSON
+- Import/restore dari file backup (upsert — tidak duplikat data)
+- Riwayat backup tersimpan (up to 15 entri)
 
-### Installation
+---
 
-#### Option 1: Direct File Access
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/rfalam2211/DashboardTokoSayur.git
-   cd DashboardTokoSayur
-   ```
+## 🛠️ Teknologi
 
-2. **Open the application**
-   - Simply open `login.html` in your web browser
-   - Login using your admin credentials
+| Layer | Teknologi |
+|-------|-----------|
+| Frontend | HTML5, CSS3, Vanilla JavaScript (ES6+) |
+| Database | **Supabase** (PostgreSQL) |
+| Realtime | Supabase Realtime (WebSocket) |
+| Auth | bcrypt.js password hashing |
+| Barcode | html5-qrcode library |
+| QR Code | qrcode.min.js |
+| PWA | Service Worker, Web App Manifest |
+| Styling | Modular CSS (base, layout, sidebar, components, pages, responsive) |
 
-#### Option 2: Local Development Server
-```bash
-# Using Python 3
-python -m http.server 8000
+---
 
-# Using Node.js (http-server)
-npx http-server
-
-# Then open http://localhost:8000/login.html
-```
-
-#### Option 3: Install as PWA (Mobile)
-1. Open the app in Chrome or Edge on your Android device
-2. Tap the "Install" button when prompted
-3. Or tap menu (⋮) > "Add to Home screen"
-4. Launch from your home screen like a native app!
-
-### First Time Setup
-1. The app will automatically connect to the Supabase cloud database
-2. Login using your admin credentials
-3. Begin by adding products in the Product Management section
-4. Process sales through the POS interface
-5. View reports and analytics in the Reports section
-
-## 📁 Project Structure
+## 📁 Struktur Proyek
 
 ```
 ida-buah/
-├── index.html              # Main application (dashboard)
-├── login.html              # Login page
+├── index.html              # Aplikasi utama (SPA)
+├── login.html              # Halaman login
+├── catalogue.html          # Katalog publik
+├── migrate.html            # Halaman migrasi database (dev only)
+├── app.js                  # Main app controller
 ├── manifest.json           # PWA manifest
-├── service-worker.js       # Service worker for offline support
-├── styles.css              # Application styles (1700+ lines)
-├── app.js                  # Main application logic
-├── icons/                  # PWA icons (72x72 to 512x512)
-│   └── icon-512x512.png
-└── js/
-    ├── database.js         # IndexedDB setup and operations (v3)
-    ├── auth.js             # Authentication module
-    ├── dashboard.js        # Dashboard module
-    ├── products.js         # Product management module
-    ├── pos.js              # Point of Sale module
-    ├── transactions.js     # Transaction history module
-    ├── reports.js          # Financial reports module
-    ├── users.js            # User management module
-    ├── mobile.js           # Mobile-specific functionality
-    └── utils.js            # Utility functions
+├── service-worker.js       # SW v6 — caching & offline
+│
+├── css/
+│   ├── index.css           # Entry point (imports semua)
+│   ├── base.css            # Variables & reset (+ dark mode)
+│   ├── layout.css          # Layout grid & containers
+│   ├── sidebar.css         # Sidebar + sync panel + dark toggle
+│   ├── components.css      # Komponen UI reusable
+│   ├── pages.css           # Page-specific styles
+│   ├── right-sidebar.css   # Right sidebar
+│   └── responsive.css      # Breakpoints responsive
+│
+├── js/
+│   ├── core/
+│   │   ├── utils.js            # Utility functions (format, toast, CSV export)
+│   │   ├── supabase.js         # Supabase client init
+│   │   ├── database.js         # CRUD operations via Supabase
+│   │   ├── activity-log.js     # Activity logging (Supabase + localStorage fallback)
+│   │   ├── offline-sync.js     # Offline queue & Supabase Realtime
+│   │   ├── backup.js           # Export/Import/Auto-backup
+│   │   ├── theme.js            # Dark/light mode toggle (no-flash)
+│   │   ├── debt-notification.js # Overdue debt push notifications
+│   │   ├── mobile.js           # Mobile sidebar behavior
+│   │   └── mobile-menu.js      # Hamburger menu
+│   │
+│   ├── pengguna/
+│   │   ├── auth-v2.js          # Login, logout, session management
+│   │   ├── permissions.js      # Role-based access control
+│   │   └── users.js            # User CRUD
+│   │
+│   ├── dashboard/
+│   │   └── dashboard.js        # Dashboard stats & summary
+│   │
+│   ├── produk/
+│   │   ├── products.js         # Product management
+│   │   ├── barcode.js          # Barcode scanner
+│   │   └── catalogue.js        # Public catalogue page
+│   │
+│   ├── kasir/
+│   │   ├── pos.js              # Point of Sale logic
+│   │   ├── discounts.js        # Discount system
+│   │   └── receipt-printer.js  # Cetak & export PDF struk
+│   │
+│   ├── transaksi/
+│   │   ├── transactions.js     # Transaction history
+│   │   ├── customers.js        # Customer management
+│   │   └── debts.js            # Debt/credit management
+│   │
+│   └── laporan/
+│       ├── reports.js          # Financial reports + PDF/CSV export
+│       ├── expenses.js         # Expense tracking
+│       └── financial-reports.js # Extended financial reports
+│
+└── icons/                  # PWA icons (72x72 → 512x512)
 ```
 
-## 💾 Data Storage
+---
 
-This application uses **IndexedDB v3** for local data storage:
+## 🚀 Cara Menjalankan
 
-### Object Stores:
-- **products** - Product inventory with barcode support
-- **transactions** - Sales transaction records
-- **expenses** - Business expense tracking
-- **users** - User accounts and authentication
-- **discounts** - Discount rules and promotions (ready)
-- **customers** - Customer information (ready)
-- **debts** - Customer debt/credit records (ready)
+### Prasyarat
+- Browser modern (Chrome/Edge/Firefox)
+- Koneksi internet untuk pertama kali (Supabase setup)
 
-### Benefits:
-- ✅ All data is stored locally on your device
-- ✅ No internet connection required
-- ✅ Fast and reliable performance
-- ✅ Data persists between sessions
-- ✅ Automatic database migrations
-- ⚠️ Data is browser-specific (clearing browser data will delete the database)
+### 1. Clone Repository
+```bash
+git clone https://github.com/rfalam2211/DashboardTokoSayur.git
+cd DashboardTokoSayur
+```
 
-## 🔧 Technologies Used
+### 2. Jalankan Local Server
+```bash
+# Python 3
+python -m http.server 8000
 
-- **HTML5**: Structure and semantics
-- **CSS3**: Styling, animations, and responsive design
-- **JavaScript (ES6+)**: Application logic
-- **IndexedDB**: Local database storage (v3)
-- **Service Workers**: Offline functionality and caching
-- **PWA**: Progressive Web App capabilities
-- **Web App Manifest**: Installable app configuration
+# Node.js
+npx http-server -p 8000
 
-## 📱 Browser Compatibility
+# Buka di browser
+http://localhost:8000/login.html
+```
 
-### Desktop:
-- ✅ Chrome/Edge (recommended) - Full PWA support
-- ✅ Firefox - Full functionality
-- ✅ Safari - Full functionality
-- ✅ Opera - Full functionality
+### 3. Login Default
+| Role | Username | Password |
+|------|----------|----------|
+| Admin | `admin` | `admin123` |
+| Kasir | `kasir` | `kasir123` |
 
-### Mobile:
-- ✅ Chrome Android - Full PWA support, installable
-- ✅ Samsung Internet - Full PWA support, installable
-- ✅ Firefox Android - Full functionality
-- ✅ Safari iOS - Full functionality (manual "Add to Home Screen")
+### 4. Install sebagai PWA (Android/Desktop)
+1. Buka app di Chrome
+2. Tap menu ⋮ → **"Add to Home screen"** / **"Install App"**
+3. Launch dari home screen seperti app native
 
-### PWA Features:
-- ✅ Service Worker caching
-- ✅ Offline functionality
-- ✅ Install prompt (Chrome/Edge)
-- ✅ App shortcuts
-- ✅ Theme color
-- ✅ Standalone display mode
+---
 
-## 🎯 Responsive Breakpoints
+## ⚙️ Konfigurasi Supabase
 
-- **Mobile**: ≤768px (hamburger menu, single column)
-- **Small Mobile**: ≤480px (optimized for small screens)
-- **Tablet**: 769px - 1024px (2-column layouts)
-- **Desktop**: >1024px (full sidebar, multi-column)
+Edit file `js/core/supabase.js` dan ganti dengan kredensial Supabase project kamu:
 
+```js
+const SUPABASE_URL = 'https://your-project.supabase.co';
+const SUPABASE_ANON_KEY = 'your-anon-key';
+```
 
-## 🚀 Performance
+### Tabel yang dibutuhkan di Supabase:
+| Tabel | Deskripsi |
+|-------|-----------|
+| `users` | Akun pengguna |
+| `products` | Data produk |
+| `transactions` | Riwayat transaksi |
+| `expenses` | Pengeluaran |
+| `customers` | Data pelanggan |
+| `debts` | Hutang pelanggan |
+| `discounts` | Aturan diskon |
+| `activity_logs` | Log aktivitas *(opsional)* |
 
-- **First Load**: ~100ms (cached after first visit)
-- **Page Navigation**: Instant (SPA architecture)
-- **Database Operations**: <10ms average
-- **Offline Support**: Full functionality without internet
-- **Mobile Optimized**: Touch-friendly, smooth animations
+> Gunakan `migrate.html` untuk membuat tabel secara otomatis.
 
-## 🤝 Contributing
+### Aktifkan Supabase Realtime:
+Di Supabase Dashboard → **Table Editor → Replication**, aktifkan Realtime untuk tabel `products`, `transactions`, dan `debts`.
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+---
 
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+## 🗺️ Roadmap — Semua Phase Selesai ✅
 
-## 📄 License
+| Phase | Fitur | Status |
+|-------|-------|--------|
+| Phase 1 | Infrastructure & Mobile UI | ✅ Selesai |
+| Phase 2 | Barcode Scanning | ✅ Selesai |
+| Phase 3 | Discount System | ✅ Selesai |
+| Phase 4 | Public Stock Catalogue | ✅ Selesai |
+| Phase 5 | Debt & Customer Management | ✅ Selesai |
+| Phase 6 | Catalogue Enhancement (QR, Images, Share) | ✅ Selesai |
+| Phase 7 | UX Polish & Bug Fixing | ✅ Selesai |
+| Phase 8 | Cloud Sync & Supabase Realtime | ✅ Selesai |
+| Phase 9 | Performance & PWA (Dark Mode, PDF Export) | ✅ Selesai |
 
-This project is open source and available under the [MIT License](LICENSE).
+---
+
+## 📱 Kompatibilitas Browser
+
+| Browser | Desktop | Mobile | PWA Install |
+|---------|---------|--------|-------------|
+| Chrome/Edge | ✅ | ✅ | ✅ |
+| Firefox | ✅ | ✅ | ⚠️ Terbatas |
+| Safari | ✅ | ✅ | ✅ (iOS 16.4+) |
+| Samsung Internet | — | ✅ | ✅ |
+
+---
+
+## 🤝 Kontribusi
+
+1. Fork project ini
+2. Buat branch fitur (`git checkout -b feature/NamaFitur`)
+3. Commit perubahan (`git commit -m 'Tambah fitur X'`)
+4. Push ke branch (`git push origin feature/NamaFitur`)
+5. Buka Pull Request
+
+---
+
+## 📄 Lisensi
+
+Open source di bawah [MIT License](LICENSE).
+
+---
 
 ## 👨‍💻 Author
 
-Created with ❤️ for small business owners by the Ida Buah team
-
-## 🙏 Acknowledgments
-
-- Built for the Ida Buah store management needs
-- Designed with user-friendliness in mind
-- Inspired by modern POS systems
-- Mobile-first approach for accessibility
-
-## 🗺️ Roadmap
-
-### Phase 1: Infrastructure & Mobile UI ✅ (Completed)
-- [x] Database upgrade to v3
-- [x] PWA manifest and service worker
-- [x] Mobile-responsive UI
-- [x] Hamburger navigation
-- [x] Touch gestures
-- [x] PWA install prompt
-
-### Phase 2: Barcode Scanning (In Progress)
-- [ ] Camera-based barcode scanning
-- [ ] Barcode input in product form
-- [ ] POS barcode integration
-
-### Phase 3: Discount System
-- [ ] Discount management UI
-- [ ] Discount application in POS
-- [ ] Discount reporting
-
-### Phase 4: Public Stock Catalogue
-- [ ] Public-facing catalogue page
-- [ ] QR code generation
-- [ ] Product images support
-
-### Phase 5: Debt Management
-- [ ] Customer management UI
-- [ ] Credit sales in POS
-- [ ] Payment tracking
-- [ ] Debt reminders
+Dibuat dengan ❤️ untuk **Ida Buah** — toko buah & sayur keluarga.
 
 ---
 
-## 📞 Support
-
-For issues, questions, or suggestions, please open an issue on GitHub.
-
-**Note**: This is an offline-first PWA. All data is stored locally. For multi-device synchronization or cloud backup features, consider adding a backend service in the future.
-
----
-
-**Version**: 3.0.0 (Database v3, PWA-enabled)  
-**Last Updated**: January 2026
+**Version**: 9.0.0  
+**Last Updated**: 1 Maret 2026  
+**Database**: Supabase Cloud (PostgreSQL)  
+**PWA**: Service Worker v6  
