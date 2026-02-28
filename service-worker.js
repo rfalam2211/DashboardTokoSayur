@@ -4,7 +4,7 @@
 // Bump versi ini setiap kali ada perubahan JS/CSS penting
 // ============================================================
 
-const CACHE_NAME = 'ida-buah-v6';
+const CACHE_NAME = 'ida-buah-v7';
 
 // Hanya cache file statis yang pasti ada
 // Jangan cache API calls atau CDN libraries (bisa fail)

@@ -178,11 +178,12 @@ function getAllowedPages() {
     }
 
     if (user.role === 'admin') {
-        return ['dashboard', 'products', 'pos', 'transactions', 'reports', 'users'];
+        return ['dashboard', 'products', 'pos', 'transactions', 'reports',
+            'discounts', 'customers', 'debts', 'users'];
     }
 
     if (user.role === 'kasir') {
-        return ['pos', 'transactions'];
+        return ['pos', 'transactions', 'customers', 'debts'];
     }
 
     return [];
