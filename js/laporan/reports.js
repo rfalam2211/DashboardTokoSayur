@@ -125,7 +125,6 @@ async function exportReportCSV() {
             ? `${document.getElementById('report-date-from')?.value}_${document.getElementById('report-date-to')?.value}`
             : _currentPeriod;
 
-        // Gabung transaksi + pengeluaran
         const rows = [
             ...reportData.transactions.map(t => ({
                 Tanggal: formatDate(t.created_at || t.date),
@@ -143,10 +142,13 @@ async function exportReportCSV() {
             }))
         ].sort((a, b) => new Date(a.Tanggal) - new Date(b.Tanggal));
 
-        // Tambah baris summary
         rows.push({ Tanggal: '', Jenis: '', Keterangan: 'TOTAL PEMASUKAN', Pemasukan: reportData.revenue, Pengeluaran: '' });
         rows.push({ Tanggal: '', Jenis: '', Keterangan: 'TOTAL PENGELUARAN', Pemasukan: '', Pengeluaran: reportData.expenses });
-        rows.push({ Tanggal: '', Jenis: '', Keterangan: 'LABA/RUGI', Pemasukan: reportData.profit > 0 ? reportData.profit : '', Pengeluaran: reportData.profit < 0 ? Math.abs(reportData.profit) : '' });
+        rows.push({
+            Tanggal: '', Jenis: '', Keterangan: 'LABA/RUGI',
+            Pemasukan: reportData.profit > 0 ? reportData.profit : '',
+            Pengeluaran: reportData.profit < 0 ? Math.abs(reportData.profit) : ''
+        });
 
         exportToCSV(rows, `laporan_${period}`);
     } catch (err) {
@@ -156,8 +158,7 @@ async function exportReportCSV() {
 }
 
 /**
- * Export laporan ke PDF via print dialog
- * (Menggunakan browser print-to-PDF — zero dependency)
+ * Export laporan ke PDF via print dialog (zero external dependency)
  */
 async function exportReportPDF() {
     try {
@@ -184,14 +185,12 @@ async function exportReportPDF() {
 
         const tableRows = rows.map(r => `
             <tr>
-                <td>${r.date}</td>
-                <td>${r.type}</td>
-                <td>${r.desc}</td>
-                <td class="right">${r.income}</td>
-                <td class="right">${r.expense}</td>
+                <td>${r.date}</td><td>${r.type}</td><td>${r.desc}</td>
+                <td class="right">${r.income}</td><td class="right">${r.expense}</td>
             </tr>
         `).join('');
 
+        const profitColor = reportData.profit >= 0 ? '#059669' : '#dc2626';
         const html = `<!DOCTYPE html>
 <html lang="id">
 <head>
@@ -210,11 +209,9 @@ async function exportReportPDF() {
         tr:nth-child(even) { background: #f9fafb; }
         .summary { margin-top: 16px; border: 2px solid #10b981; border-radius: 8px; padding: 12px; }
         .summary-row { display: flex; justify-content: space-between; padding: 4px 0; }
-        .summary-row.profit { font-weight: bold; font-size: 13px; color: ${reportData.profit >= 0 ? '#059669' : '#dc2626'}; }
+        .profit { font-weight: bold; font-size: 13px; color: ${profitColor}; }
         .footer { margin-top: 20px; font-size: 9px; color: #666; text-align: center; }
-        @media print {
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        }
+        @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
     </style>
 </head>
 <body>
@@ -254,114 +251,3 @@ async function exportReportPDF() {
         showToast('Gagal export PDF', 'error');
     }
 }
-
-
-/**
- * Initialize reports page
- */
-async function initReports() {
-    setupReportsEventListeners();
-    await loadReportData('today');
-}
-
-/**
- * Setup event listeners for reports page
- */
-function setupReportsEventListeners() {
-    // Period selector
-    document.getElementById('report-period').addEventListener('change', (e) => {
-        const period = e.target.value;
-        const customDateRange = document.getElementById('custom-date-range');
-
-        if (period === 'custom') {
-            customDateRange.style.display = 'flex';
-
-            // Set default custom dates
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('report-date-from').value = today;
-            document.getElementById('report-date-to').value = today;
-        } else {
-            customDateRange.style.display = 'none';
-            loadReportData(period);
-        }
-    });
-
-    // Custom date range
-    document.getElementById('report-date-from').addEventListener('change', loadCustomReport);
-    document.getElementById('report-date-to').addEventListener('change', loadCustomReport);
-}
-
-/**
- * Load report data for period
- */
-async function loadReportData(period) {
-    try {
-        const dateRange = getDateRange(period);
-
-        const transactions = await getAllTransactions(dateRange);
-        const expenses = await getAllExpenses(dateRange);
-
-        // Calculate totals
-        reportData.revenue = transactions.reduce((sum, t) => sum + t.total, 0);
-        reportData.expenses = expenses.reduce((sum, e) => sum + e.amount, 0);
-        reportData.profit = reportData.revenue - reportData.expenses;
-
-        // Update UI
-        updateReportUI();
-
-    } catch (error) {
-        console.error('Error loading report data:', error);
-        showToast('Gagal memuat laporan', 'error');
-    }
-}
-
-/**
- * Load custom report
- */
-async function loadCustomReport() {
-    const fromDate = document.getElementById('report-date-from').value;
-    const toDate = document.getElementById('report-date-to').value;
-
-    if (!fromDate || !toDate) return;
-
-    const from = new Date(fromDate);
-    from.setHours(0, 0, 0, 0);
-
-    const to = new Date(toDate);
-    to.setHours(23, 59, 59, 999);
-
-    try {
-        const transactions = await getAllTransactions({ from, to });
-        const expenses = await getAllExpenses({ from, to });
-
-        reportData.revenue = transactions.reduce((sum, t) => sum + t.total, 0);
-        reportData.expenses = expenses.reduce((sum, e) => sum + e.amount, 0);
-        reportData.profit = reportData.revenue - reportData.expenses;
-
-        updateReportUI();
-
-    } catch (error) {
-        console.error('Error loading custom report:', error);
-        showToast('Gagal memuat laporan', 'error');
-    }
-}
-
-/**
- * Update report UI
- */
-function updateReportUI() {
-    document.getElementById('total-revenue').textContent = formatCurrency(reportData.revenue);
-    document.getElementById('total-expenses').textContent = formatCurrency(reportData.expenses);
-
-    const profitElement = document.getElementById('profit-loss');
-    profitElement.textContent = formatCurrency(reportData.profit);
-
-    if (reportData.profit > 0) {
-        profitElement.className = 'report-value positive';
-    } else if (reportData.profit < 0) {
-        profitElement.className = 'report-value negative';
-    } else {
-        profitElement.className = 'report-value';
-    }
-}
-
