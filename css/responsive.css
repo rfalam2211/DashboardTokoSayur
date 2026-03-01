@@ -160,6 +160,32 @@
     #customers-page .card-header,
     #debts-page .card-header     { flex-direction: column; align-items: stretch; }
 
+        /* Discounts */
+        #discounts-page .page-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+    
+        #discounts-page .card-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+    
+        /* Users */
+        #users-page .page-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+    
+        #users-page .card-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+    
+        #users-page table th:nth-child(4),
+        #users-page table td:nth-child(4) {
+            display: none;
+        }
     .debt-filters             { flex-direction: column; }
     .debt-filters .select-input { width: 100%; min-width: unset; }
     .debt-summary             { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
