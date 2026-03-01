@@ -29,6 +29,21 @@ const PERMISSIONS = {
         expenses: [],
         activityLogs: [],
         settings: []
+    },
+    developer: {
+        // Akses penuh ke semua fitur + debug
+        dashboard: ['view'],
+        products: ['view', 'create', 'edit', 'delete'],
+        pos: ['view', 'create'],
+        transactions: ['view', 'delete'],
+        reports: ['view', 'export'],
+        users: ['view', 'create', 'edit', 'delete'],
+        discounts: ['view', 'create', 'edit', 'delete'],
+        customers: ['view', 'create', 'edit', 'delete'],
+        debts: ['view', 'create', 'edit', 'delete', 'payment'],
+        expenses: ['view', 'create', 'edit', 'delete'],
+        activityLogs: ['view', 'export'],
+        settings: ['view', 'edit']
     }
 };
 
@@ -45,8 +60,8 @@ function hasPermission(module, action = 'view') {
         return false;
     }
 
-    // Admin has all permissions
-    if (currentUser.role === 'admin') {
+    // Admin & Developer punya semua permissions
+    if (currentUser.role === 'admin' || currentUser.role === 'developer') {
         return true;
     }
 
@@ -86,7 +101,7 @@ function getUserPermissions(module) {
         return [];
     }
 
-    if (currentUser.role === 'admin') {
+    if (currentUser.role === 'admin' || currentUser.role === 'developer') {
         return ['view', 'create', 'edit', 'delete', 'export', 'payment'];
     }
 

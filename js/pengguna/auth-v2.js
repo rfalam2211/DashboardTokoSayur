@@ -162,7 +162,8 @@ function checkAuth() {
 function hasPermission(feature) {
     const user = getCurrentUser();
     if (!user) return false;
-    if (user.role === 'admin') return true;
+    // Admin & Developer punya akses ke semua fitur
+    if (user.role === 'admin' || user.role === 'developer') return true;
     if (user.role === 'kasir') {
         return ['pos', 'transactions', 'customers', 'debts'].includes(feature);
     }
@@ -172,7 +173,7 @@ function hasPermission(feature) {
 function getAllowedPages() {
     const user = getCurrentUser();
     if (!user) return [];
-    if (user.role === 'admin') {
+    if (user.role === 'admin' || user.role === 'developer') {
         return ['dashboard', 'products', 'pos', 'transactions', 'reports',
             'discounts', 'customers', 'debts', 'users'];
     }

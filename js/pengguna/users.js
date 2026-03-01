@@ -92,8 +92,11 @@ function displayUsers(users) {
             <td>${escapeHtml(user.name)}</td>
             <td>${escapeHtml(user.username)}</td>
             <td>
-                <span class="badge ${user.role === 'admin' ? 'badge-success' : 'badge-info'}">
-                    ${user.role === 'admin' ? 'Admin' : 'Kasir'}
+                <span class="badge ${
+        user.role === 'admin' ? 'badge-success' :
+            user.role === 'developer' ? 'badge-purple' : 'badge-info'
+        }">
+                    ${user.role === 'admin' ? 'Admin' : user.role === 'developer' ? 'Developer' : 'Kasir'}
                 </span>
             </td>
             <td>${formatDate(user.createdAt)}</td>
