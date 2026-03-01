@@ -506,3 +506,81 @@ tbody tr:hover { background: var(--color-gray-50); }
     border-color: var(--color-danger) !important;
     box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
+/* ===================== IMAGE UPLOADER ===================== */
+.img-upload-wrap {
+    position: relative;
+    width: 100%;
+    height: 160px;
+    border: 2px dashed var(--color-gray-300);
+    border-radius: var(--radius-lg);
+    background: var(--color-gray-50);
+    overflow: hidden;
+    transition: border-color var(--transition-base), background var(--transition-base);
+    margin-bottom: var(--spacing-sm);
+}
+
+.img-upload-wrap.drag-over {
+    border-color: var(--color-primary);
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.img-upload-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    color: var(--color-gray-400);
+    pointer-events: none;
+}
+
+.img-upload-placeholder span {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.img-upload-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: var(--radius-md);
+    background: var(--color-gray-50);
+}
+
+.img-upload-remove {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    background: rgba(239, 68, 68, 0.9);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-family: inherit;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.img-upload-remove:hover {
+    background: var(--color-danger);
+    transform: scale(1.1);
+}
+
+.img-upload-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+    margin-bottom: var(--spacing-xs);
+}
+
+.img-upload-actions .btn {
+    flex: 1;
+    min-width: 130px;
+}

@@ -68,6 +68,9 @@ function setupProductsEventListeners() {
     document.getElementById('filter-category').addEventListener('change', (e) => {
         filterProducts(document.getElementById('search-products').value, e.target.value);
     });
+
+    // Image uploader
+    setupProductImageUploader();
 }
 
 /**
@@ -157,6 +160,100 @@ function filterProducts(searchTerm, category) {
 }
 
 /**
+ * Setup image uploader (file picker, camera, drag-and-drop, remove)
+ */
+function setupProductImageUploader() {
+    const fileInput = document.getElementById('product-image-file');
+    const cameraInput = document.getElementById('product-image-camera');
+    const removeBtn = document.getElementById('remove-product-image-btn');
+    const wrap = document.getElementById('product-image-preview-wrap');
+
+    if (!fileInput) return;
+
+    // Handle file from gallery/file picker
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) handleImageFile(file);
+        fileInput.value = ''; // reset so same file can be re-selected
+    });
+
+    // Handle file from camera
+    cameraInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) handleImageFile(file);
+        cameraInput.value = '';
+    });
+
+    // Remove button
+    removeBtn.addEventListener('click', () => clearProductImagePreview());
+
+    // Drag-and-drop on the preview area
+    wrap.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        wrap.classList.add('drag-over');
+    });
+    wrap.addEventListener('dragleave', () => wrap.classList.remove('drag-over'));
+    wrap.addEventListener('drop', (e) => {
+        e.preventDefault();
+        wrap.classList.remove('drag-over');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) handleImageFile(file);
+    });
+}
+
+/**
+ * Convert an image File to Base64 and show preview
+ */
+function handleImageFile(file) {
+    if (!file.type.startsWith('image/')) {
+        showToast('File harus berupa gambar (JPG, PNG, WEBP)', 'warning');
+        return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+        showToast('Ukuran foto maksimal 5 MB', 'warning');
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        const base64 = ev.target.result;
+        setProductImagePreview(base64);
+    };
+    reader.readAsDataURL(file);
+}
+
+/**
+ * Show image preview and set hidden field value
+ */
+function setProductImagePreview(src) {
+    const preview = document.getElementById('product-image-preview');
+    const emptyMsg = document.getElementById('product-image-empty');
+    const removeBtn = document.getElementById('remove-product-image-btn');
+    const hiddenUrl = document.getElementById('product-image-url');
+
+    preview.src = src;
+    preview.style.display = 'block';
+    emptyMsg.style.display = 'none';
+    removeBtn.style.display = 'flex';
+    hiddenUrl.value = src;
+}
+
+/**
+ * Clear the image preview
+ */
+function clearProductImagePreview() {
+    const preview = document.getElementById('product-image-preview');
+    const emptyMsg = document.getElementById('product-image-empty');
+    const removeBtn = document.getElementById('remove-product-image-btn');
+    const hiddenUrl = document.getElementById('product-image-url');
+
+    preview.src = '';
+    preview.style.display = 'none';
+    emptyMsg.style.display = 'flex';
+    removeBtn.style.display = 'none';
+    hiddenUrl.value = '';
+}
+
+/**
  * Open product modal
  */
 function openProductModal(product = null) {
@@ -165,6 +262,7 @@ function openProductModal(product = null) {
     const title = document.getElementById('product-modal-title');
 
     form.reset();
+    clearProductImagePreview();
 
     if (product) {
         title.textContent = 'Edit Produk';
@@ -174,8 +272,10 @@ function openProductModal(product = null) {
         document.getElementById('product-price').value = product.price;
         document.getElementById('product-stock').value = product.stock;
         document.getElementById('product-barcode').value = product.barcode || '';
-        const imgInput = document.getElementById('product-image-url');
-        if (imgInput) imgInput.value = product.image_url || product.imageUrl || '';
+
+        const existingImg = product.image_url || product.imageUrl || '';
+        if (existingImg) setProductImagePreview(existingImg);
+
         editingProductId = product.id;
     } else {
         title.textContent = 'Tambah Produk';
