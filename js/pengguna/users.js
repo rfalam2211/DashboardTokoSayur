@@ -158,7 +158,7 @@ async function loadUserData(userId) {
         document.getElementById('user-id').value = user.id;
         document.getElementById('user-name-input').value = user.name;
         document.getElementById('user-username').value = user.username;
-        document.getElementById('user-role').value = user.role;
+        document.getElementById('input-user-role').value = user.role;
         
         // Make password optional for editing
         const passwordInput = document.getElementById('user-password');
@@ -181,7 +181,7 @@ async function handleUserFormSubmit(e) {
     const name = document.getElementById('user-name-input').value.trim();
     const username = document.getElementById('user-username').value.trim();
     const password = document.getElementById('user-password').value;
-    const role = document.getElementById('user-role').value;
+    const role = document.getElementById('input-user-role').value;
 
     if (!name || !username || !role) {
         showToast('Mohon lengkapi semua field yang wajib diisi', 'warning');

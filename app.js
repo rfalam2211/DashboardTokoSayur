@@ -117,7 +117,7 @@ function loadUserInfo() {
     if (!currentUser) return;
 
     document.getElementById('user-name').textContent = currentUser.name;
-    document.getElementById('user-role').textContent = currentUser.role;
+    document.getElementById('sidebar-user-role').textContent = currentUser.role;
 }
 
 /**
