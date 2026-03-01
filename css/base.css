@@ -118,7 +118,7 @@ body {
 /* Print */
 @media print {
     .sidebar, .mobile-menu-btn, .sidebar-overlay,
-    .sidebar-toggle-btn, .right-sidebar-toggle,
+    .sidebar-toggle-btn,
     .btn, .page-header .btn { display: none !important; }
     .main-content { margin-left: 0; width: 100%; }
     .card { box-shadow: none; border: 1px solid var(--color-gray-300); }
@@ -205,10 +205,7 @@ body.dark-mode tbody tr:hover {
     background: #252d3d;
 }
 
-body.dark-mode .right-sidebar {
-    background: #161b2b;
-    border-color: #2d3748;
-}
+
 
 body.dark-mode .nav-item {
     color: #9ca3af;

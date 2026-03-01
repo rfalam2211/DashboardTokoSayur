@@ -57,8 +57,9 @@
 /* ===================== MOBILE (max-width: 640px) ===================== */
 @media (max-width: 640px) {
     /* Sembunyikan toggle desktop di mobile */
-    .sidebar-toggle-btn  { display: none; }
-    .right-sidebar-toggle { display: none; }
+    .sidebar-toggle-btn {
+            display: none;
+        }
 
     /* Sidebar mobile: slide dari kiri */
     .sidebar {

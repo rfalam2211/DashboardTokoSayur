@@ -23,7 +23,7 @@ const STATIC_CACHE = [
     '/css/layout.css',
     '/css/components.css',
     '/css/pages.css',
-    '/css/right-sidebar.css',
+
     '/css/responsive.css',
     '/catalogue.css',
 
