@@ -264,9 +264,18 @@ async function seedDefaultUsers() {
     try {
         const users = await getAllUsers();
         if (users.length === 0) {
-            await addUser({ username: 'admin', password: 'admin123', role: 'admin', name: 'Administrator' });
-            await addUser({ username: 'kasir', password: 'kasir123', role: 'kasir', name: 'Kasir' });
-            console.log('[DB] Default users seeded.');
+            // Hash passwords sebelum disimpan
+            // hashPassword() berasal dari auth-v2.js (dimuat sebelum database.js di index.html)
+            const hashFn = (typeof hashPassword === 'function')
+                ? hashPassword
+                : async (p) => p; // fallback aman jika auth-v2.js belum dimuat
+
+            const adminHash = await hashFn('admin123');
+            const kasirHash = await hashFn('kasir123');
+
+            await addUser({ username: 'admin', password: adminHash, role: 'admin', name: 'Administrator' });
+            await addUser({ username: 'kasir', password: kasirHash, role: 'kasir', name: 'Kasir' });
+            console.log('[DB] Default users seeded (password hashed).');
         }
     } catch (error) {
         console.error('[DB] Error seeding users:', error);

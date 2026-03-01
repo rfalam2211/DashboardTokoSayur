@@ -273,8 +273,6 @@
             }
         }
     </style>
-    <!-- Password Hashing Library -->
-    <script src="https://unpkg.com/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
     <!-- Supabase Client Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -327,10 +325,11 @@
     </div>
 
     <script src="js/core/utils.js"></script>
+    <!-- Auth harus dimuat sebelum database.js agar hashPassword tersedia untuk seedDefaultUsers -->
+    <script src="js/pengguna/auth-v2.js"></script>
     <!-- Supabase HARUS load sebelum database.js -->
     <script src="js/core/supabase.js"></script>
     <script src="js/core/database.js"></script>
-    <script src="js/pengguna/auth-v2.js"></script>
     <script>
                 // Initialize Supabase and seed default users
         async function initLogin() {

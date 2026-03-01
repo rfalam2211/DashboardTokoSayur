@@ -65,12 +65,15 @@ function renderProducts(products) {
     grid.innerHTML = products.map(product => {
         const stockStatus = getStockStatus(product.stock);
         const emoji = getCategoryEmoji(product.category);
-        const hasImage = product.image_url && product.image_url.trim() !== '';
+        const imgSrc = product.image || product.image_url || '';
+        const hasImage = imgSrc.trim() !== '';
         const priceFormatted = formatRupiah(product.price);
 
         const imageContent = hasImage
-            ? `<img src="${escapeHtml(product.image_url)}" alt="${escapeHtml(product.name)}" 
-                   onerror="this.style.display='none'; this.previousElementSibling.style.display='block'">
+            ? `<img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(product.name)}"
+                   loading="lazy"
+                   style="width:100%;height:100%;object-fit:cover;"
+                   onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
                <span class="product-emoji" style="display:none">${emoji}</span>`
             : `<span class="product-emoji">${emoji}</span>`;
 
@@ -203,8 +206,9 @@ function showProductDetail(productId) {
     // Image / Emoji
     const emojiEl = document.getElementById('modal-product-emoji');
     const imgEl = document.getElementById('modal-product-img');
-    if (product.image_url && product.image_url.trim()) {
-        imgEl.src = product.image_url;
+    const imgSrc = product.image || product.image_url || '';
+    if (imgSrc.trim()) {
+        imgEl.src = imgSrc;
         imgEl.style.display = 'block';
         emojiEl.style.display = 'none';
         imgEl.onerror = () => {
