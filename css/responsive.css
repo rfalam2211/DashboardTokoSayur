@@ -52,6 +52,17 @@
     #debts-page { padding-right: var(--spacing-md); }
 
     .page, .page-header, .card { width: 100%; max-width: 100%; }
+/* Fix page-header layout untuk customers/debts/users */
+#customers-page .page-header,
+#debts-page .page-header,
+#users-page .page-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+}
 }
 
 /* ===================== MOBILE (max-width: 640px) ===================== */
@@ -77,10 +88,10 @@
     /* Sidebar collapsed di mobile = transform override */
     body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 
-    /* Main content full width */
+        /* Main content full width di mobile — tambah padding-top untuk hamburger button */
     .main-content {
         margin-left: 0 !important;
-        padding: var(--spacing-lg) var(--spacing-md) var(--spacing-md);
+        padding: 4.5rem var(--spacing-md) var(--spacing-md);
     }
 
     /* Show sidebar-overlay dari mobile.js (body.sidebar-open) */
@@ -153,12 +164,38 @@
     /* Reports */
     .report-summary { grid-template-columns: 1fr; }
 
-    /* Customers & Debts */
+        /* Customers, Debts & Users */
     #customers-page .page-header,
-    #debts-page .page-header     { flex-direction: column; align-items: stretch; }
-    #search-customers             { max-width: 100%; }
+        #debts-page .page-header,
+        #users-page .page-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+    
+        #search-customers {
+            max-width: 100%;
+            width: 100%;
+        }
     #customers-page .card-header,
-    #debts-page .card-header     { flex-direction: column; align-items: stretch; }
+        #debts-page .card-header,
+        #users-page .card-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: var(--spacing-sm);
+        }
+    
+        #customers-page .card-header input,
+        #users-page .card-header input {
+            max-width: 100% !important;
+            width: 100%;
+        }
+    
+        #customers-page .page-header .btn,
+        #debts-page .page-header .btn,
+        #users-page .page-header .btn {
+            width: 100%;
+            justify-content: center;
+        }
 
         /* Discounts */
         #discounts-page .page-header {

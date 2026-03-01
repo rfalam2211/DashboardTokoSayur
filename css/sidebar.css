@@ -99,15 +99,16 @@ body.sidebar-collapsed .sidebar-toggle-btn .toggle-icon {
 
 /* ---- Sidebar Header ---- */
 .sidebar-header {
-    padding: var(--spacing-xl) var(--spacing-lg);
+    padding: var(--spacing-md) var(--spacing-lg);
     border-bottom: 1px solid var(--color-gray-100);
+    flex-shrink: 0;
 }
 
 .logo {
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
 }
 
 .logo h1 {
@@ -165,8 +166,11 @@ body.sidebar-collapsed .sidebar-toggle-btn .toggle-icon {
 /* ---- Navigation ---- */
 .sidebar-nav {
     flex: 1;
-    padding: var(--spacing-lg) 0;
+    padding: var(--spacing-md) 0;
     overflow-y: auto;
+    overflow-x: hidden;
+        /* Pastikan nav bisa scroll jika isi terlalu panjang */
+        min-height: 0;
 }
 
 .nav-item {
@@ -481,4 +485,29 @@ body.sidebar-open .sidebar-overlay {
     100% {
         transform: scale(1);
     }
+}
+/* ===== KATALOG PUBLIK — External Nav Link ===== */
+.nav-item-external {
+    color: var(--color-primary-dark, #059669);
+    font-size: 0.875rem;
+}
+
+.nav-item-external:hover {
+    background: linear-gradient(135deg, rgba(16, 185, 129, .12) 0%, rgba(5, 150, 105, .06) 100%);
+    color: var(--color-primary-dark, #059669);
+    transform: translateX(4px);
+}
+
+.nav-item-external span:first-of-type {
+    flex: 1;
+}
+
+/* Dark mode support */
+.dark-mode .nav-item-external {
+    color: #34d399;
+}
+
+.dark-mode .nav-item-external:hover {
+    background: rgba(16, 185, 129, .15);
+    color: #6ee7b7;
 }
