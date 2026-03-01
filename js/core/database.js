@@ -51,7 +51,7 @@ async function addProduct(product) {
             price: parseFloat(product.price),
             stock: parseInt(product.stock),
             barcode: product.barcode || null,
-            image_url: product.image_url || null,
+            image: product.image_url || null,
             created_at: new Date().toISOString()
         }])
         .select()
@@ -67,7 +67,7 @@ async function getAllProducts() {
         .select('*')
         .order('name');
     if (error) throw error;
-    return data.map(p => ({ ...p, imageUrl: p.image_url || null, createdAt: p.created_at, updatedAt: p.updated_at }));
+    return data.map(p => ({ ...p, image_url: p.image || null, imageUrl: p.image || null, createdAt: p.created_at, updatedAt: p.updated_at }));
 }
 
 async function getProduct(id) {
@@ -82,6 +82,8 @@ async function getProduct(id) {
 
 async function updateProduct(id, updates) {
     const payload = { ...updates, updated_at: new Date().toISOString() };
+    // Map image_url -> image (schema column name)
+    if (payload.image_url !== undefined) { payload.image = payload.image_url; delete payload.image_url; }
     delete payload.createdAt; delete payload.updatedAt; delete payload.created_at;
     const { error } = await _db().from('products').update(payload).eq('id', id);
     if (error) throw error;

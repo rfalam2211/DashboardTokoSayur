@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS products (
   price       DECIMAL(12,2) NOT NULL DEFAULT 0,
   stock       INTEGER DEFAULT 0,
   barcode     TEXT,
-  image       TEXT,
+  image       TEXT,  -- Stores Base64 data URL atau URL eksternal (opsional)
   created_at  TIMESTAMPTZ DEFAULT NOW(),
   updated_at  TIMESTAMPTZ
 );

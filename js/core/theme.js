@@ -67,9 +67,9 @@ function _updateToggleUI(isDark) {
 
     const dark = isDark ?? document.body.classList.contains('dark-mode');
 
-    if (btn) btn.title = dark ? 'Ganti ke Mode Terang' : 'Ganti ke Mode Gelap';
+    if (btn) btn.title = dark ? 'Ganti ke rang' : 'Ganti ke Mode Gelap';
     if (icon) icon.textContent = dark ? '☀️' : '🌙';
-    if (label) label.textContent = dark ? 'Mode Terang' : 'Mode Gelap';
+    if (label) label.textContent = dark ? 'rang' : 'Mode Gelap';
 }
 
 // Auto-init immediately so there's no flash

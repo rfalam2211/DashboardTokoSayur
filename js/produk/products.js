@@ -202,21 +202,36 @@ function setupProductImageUploader() {
 }
 
 /**
- * Convert an image File to Base64 and show preview
+ * Convert an image File to compressed Base64 and show preview
  */
 function handleImageFile(file) {
     if (!file.type.startsWith('image/')) {
         showToast('File harus berupa gambar (JPG, PNG, WEBP)', 'warning');
         return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-        showToast('Ukuran foto maksimal 5 MB', 'warning');
+    if (file.size > 10 * 1024 * 1024) {
+        showToast('Ukuran foto maksimal 10 MB', 'warning');
         return;
     }
+
     const reader = new FileReader();
     reader.onload = (ev) => {
-        const base64 = ev.target.result;
-        setProductImagePreview(base64);
+        // Compress using canvas before storing
+        const img = new Image();
+        img.onload = () => {
+            const MAX = 600;
+            let w = img.width, h = img.height;
+            if (w > MAX || h > MAX) {
+                if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+                else { w = Math.round(w * MAX / h); h = MAX; }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            const compressed = canvas.toDataURL('image/jpeg', 0.75);
+            setProductImagePreview(compressed);
+        };
+        img.src = ev.target.result;
     };
     reader.readAsDataURL(file);
 }
