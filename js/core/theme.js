@@ -62,14 +62,12 @@ function _applyLight(animate = true) {
 
 function _updateToggleUI(isDark) {
     const btn = document.getElementById('theme-toggle-btn');
-    const icon = document.getElementById('theme-toggle-icon');
     const label = document.getElementById('theme-toggle-label');
 
     const dark = isDark ?? document.body.classList.contains('dark-mode');
 
-    if (btn) btn.title = dark ? 'Ganti ke rang' : 'Ganti ke Mode Gelap';
-    if (icon) icon.textContent = dark ? '☀️' : '🌙';
-    if (label) label.textContent = dark ? 'rang' : 'Mode Gelap';
+    if (btn) btn.title = dark ? 'Ganti ke Mode Terang' : 'Ganti ke Mode Gelap';
+    if (label) label.textContent = dark ? 'Mode Terang' : 'Mode Gelap';
 }
 
 // Auto-init immediately so there's no flash
