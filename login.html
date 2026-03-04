@@ -127,6 +127,27 @@
             color: var(--color-gray-500);
         }
 
+        .toggle-password {
+            position: absolute;
+            right: 0.875rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--color-gray-500);
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color var(--transition-base);
+            line-height: 1;
+        }
+
+        .toggle-password:hover {
+            color: var(--color-primary);
+        }
+
         .input {
             width: 100%;
             padding: 0.75rem 1rem 0.75rem 2.75rem;
@@ -136,6 +157,10 @@
             font-family: inherit;
             transition: all var(--transition-base);
             background: var(--color-white);
+        }
+
+        .input.has-toggle {
+            padding-right: 2.75rem;
         }
 
         .input:focus {
@@ -311,7 +336,26 @@
                         <svg class="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M5 9V6C5 3.23858 7.23858 1 10 1C12.7614 1 15 3.23858 15 6V9M3 9H17C17.5523 9 18 9.44772 18 10V18C18 18.5523 17.5523 19 17 19H3C2.44772 19 2 18.5523 2 18V10C2 9.44772 2.44772 9 3 9Z" stroke="currentColor" stroke-width="2"/>
                         </svg>
-                        <input type="password" id="password" class="input" placeholder="Masukkan password" required>
+                        <input type="password" id="password" class="input has-toggle" placeholder="Masukkan password" required>
+                        <button type="button" class="toggle-password" id="toggle-login-password"
+                            onclick="togglePasswordVisibility('password', 'toggle-login-password')" title="Tampilkan/Sembunyikan Password"
+                            aria-label="Toggle password visibility">
+                            <!-- Eye icon (default: password hidden) -->
+                            <svg id="toggle-login-password-eye" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+                            </svg>
+                            <!-- Eye-off icon (hidden by default) -->
+                            <svg id="toggle-login-password-eye-off" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg" style="display:none;">
+                                <path
+                                    d="M17.94 17.94A10.07 10.07 0 0112 20C5 20 1 12 1 12a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M1 1l22 22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </button>
                     </div>
                 </div>
 

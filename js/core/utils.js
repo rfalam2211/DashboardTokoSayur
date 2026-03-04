@@ -207,3 +207,25 @@ function truncate(str, maxLength = 30) {
     if (!str) return '';
     return str.length > maxLength ? str.substring(0, maxLength) + '...' : str;
 }
+
+// ===== PASSWORD VISIBILITY TOGGLE =====
+
+/**
+ * Toggles a password input between visible and hidden.
+ * @param {string} inputId   - The id of the <input type="password"> element.
+ * @param {string} buttonId  - The id of the toggle <button> element.
+ *                             Expects child SVGs with ids: `${buttonId}-eye` and `${buttonId}-eye-off`
+ */
+function togglePasswordVisibility(inputId, buttonId) {
+    const input = document.getElementById(inputId);
+    const eyeIcon = document.getElementById(buttonId + '-eye');
+    const eyeOffIcon = document.getElementById(buttonId + '-eye-off');
+
+    if (!input) return;
+
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+
+    if (eyeIcon) eyeIcon.style.display = isHidden ? 'none' : 'block';
+    if (eyeOffIcon) eyeOffIcon.style.display = isHidden ? 'block' : 'none';
+}
