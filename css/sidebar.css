@@ -486,28 +486,55 @@ body.sidebar-open .sidebar-overlay {
         transform: scale(1);
     }
 }
-/* ===== KATALOG PUBLIK — External Nav Link ===== */
-.nav-item-external {
+/* ===== KATALOG PRODUK — External Nav Link ===== */
+.nav-item-catalogue {
     color: var(--color-primary-dark, #059669);
     font-size: 0.875rem;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.06) 0%, rgba(5, 150, 105, 0.03) 100%);
+        margin-top: 0.25rem;
 }
 
-.nav-item-external:hover {
-    background: linear-gradient(135deg, rgba(16, 185, 129, .12) 0%, rgba(5, 150, 105, .06) 100%);
+.nav-item-catalogue:hover {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.08) 100%);
+    border-color: rgba(16, 185, 129, 0.4);
     color: var(--color-primary-dark, #059669);
     transform: translateX(4px);
+    box-shadow: 0 2px 12px rgba(16, 185, 129, 0.15);
 }
 
-.nav-item-external span:first-of-type {
+.nav-item-catalogue span:first-of-type {
     flex: 1;
 }
 
+/* Badge "Publik" */
+.catalogue-badge {
+    flex-shrink: 0;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    padding: 0.15rem 0.45rem;
+    border-radius: 999px;
+    line-height: 1.4;
+    box-shadow: 0 1px 4px rgba(16, 185, 129, 0.3);
+}
 /* Dark mode support */
-.dark-mode .nav-item-external {
+.dark-mode .nav-item-catalogue {
     color: #34d399;
+    border-color: rgba(52, 211, 153, 0.2);
+        background: linear-gradient(135deg, rgba(52, 211, 153, 0.08) 0%, rgba(16, 185, 129, 0.04) 100%);
 }
 
-.dark-mode .nav-item-external:hover {
-    background: rgba(16, 185, 129, .15);
+.dark-mode .nav-item-catalogue:hover {
+    background: rgba(52, 211, 153, 0.15);
+    border-color: rgba(52, 211, 153, 0.4);
     color: #6ee7b7;
+    box-shadow: 0 2px 12px rgba(52, 211, 153, 0.15);
+    }
+    
+    .dark-mode .catalogue-badge {
+        background: linear-gradient(135deg, #34d399, #10b981);
 }
