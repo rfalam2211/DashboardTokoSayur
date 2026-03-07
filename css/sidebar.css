@@ -486,7 +486,7 @@ body.sidebar-open .sidebar-overlay {
         transform: scale(1);
     }
 }
-/* ===== KATALOG PRODUK — Standalone Nav Link ===== */
+/* ===== KATALOG PRODUK — Tampilan sama seperti nav-item biasa ===== */
 .nav-catalogue-link {
     display: flex;
     align-items: center;
@@ -498,55 +498,22 @@ body.sidebar-open .sidebar-overlay {
     font-weight: 500;
     font-size: 0.875rem;
     position: relative;
-    transition: all 0.2s ease;
-    /* Tampilan khusus katalog */
-    color: var(--color-primary-dark, #059669);
-    border: 1px solid rgba(16, 185, 129, 0.2);
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.06) 0%, rgba(5, 150, 105, 0.03) 100%);
-        margin-top: 0.25rem;
+    transition: all var(--transition-base, 0.2s ease);
+        color: var(--color-gray-600, #4b5563);
 }
 
 .nav-catalogue-link:hover {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.08) 100%);
-    border-color: rgba(16, 185, 129, 0.4);
-    color: var(--color-primary-dark, #059669);
+    background: var(--color-gray-50, #f9fafb);
+        color: var(--color-primary, #10b981);
     transform: translateX(4px);
-    box-shadow: 0 2px 12px rgba(16, 185, 129, 0.15);
-}
-
-.nav-catalogue-link span:first-of-type {
-    flex: 1;
-}
-
-/* Badge "Publik" */
-.catalogue-badge {
-    flex-shrink: 0;
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: #fff;
-    padding: 0.15rem 0.45rem;
-    border-radius: 999px;
-    line-height: 1.4;
-    box-shadow: 0 1px 4px rgba(16, 185, 129, 0.3);
 }
 
 /* Dark mode support */
 .dark-mode .nav-catalogue-link {
-    color: #34d399;
-    border-color: rgba(52, 211, 153, 0.2);
-    background: linear-gradient(135deg, rgba(52, 211, 153, 0.08) 0%, rgba(16, 185, 129, 0.04) 100%);
+    color: var(--color-gray-400, #9ca3af);
 }
 
 .dark-mode .nav-catalogue-link:hover {
-    background: rgba(52, 211, 153, 0.15);
-    border-color: rgba(52, 211, 153, 0.4);
-    color: #6ee7b7;
-    box-shadow: 0 2px 12px rgba(52, 211, 153, 0.15);
-}
-
-.dark-mode .catalogue-badge {
-    background: linear-gradient(135deg, #34d399, #10b981);
+    background: rgba(255, 255, 255, 0.06);
+        color: var(--color-primary, #10b981);
 }
