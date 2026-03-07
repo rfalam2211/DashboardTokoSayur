@@ -486,16 +486,27 @@ body.sidebar-open .sidebar-overlay {
         transform: scale(1);
     }
 }
-/* ===== KATALOG PRODUK — External Nav Link ===== */
-.nav-item-catalogue {
-    color: var(--color-primary-dark, #059669);
+/* ===== KATALOG PRODUK — Standalone Nav Link ===== */
+.nav-catalogue-link {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md, 1rem);
+    padding: var(--spacing-md, 1rem) var(--spacing-lg, 1.5rem);
+    margin: var(--spacing-xs, 0.25rem) var(--spacing-md, 1rem);
+    border-radius: var(--radius-lg, 0.75rem);
+    text-decoration: none;
+    font-weight: 500;
     font-size: 0.875rem;
+    position: relative;
+    transition: all 0.2s ease;
+    /* Tampilan khusus katalog */
+    color: var(--color-primary-dark, #059669);
     border: 1px solid rgba(16, 185, 129, 0.2);
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.06) 0%, rgba(5, 150, 105, 0.03) 100%);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.06) 0%, rgba(5, 150, 105, 0.03) 100%);
         margin-top: 0.25rem;
 }
 
-.nav-item-catalogue:hover {
+.nav-catalogue-link:hover {
     background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.08) 100%);
     border-color: rgba(16, 185, 129, 0.4);
     color: var(--color-primary-dark, #059669);
@@ -503,7 +514,7 @@ body.sidebar-open .sidebar-overlay {
     box-shadow: 0 2px 12px rgba(16, 185, 129, 0.15);
 }
 
-.nav-item-catalogue span:first-of-type {
+.nav-catalogue-link span:first-of-type {
     flex: 1;
 }
 
@@ -521,20 +532,21 @@ body.sidebar-open .sidebar-overlay {
     line-height: 1.4;
     box-shadow: 0 1px 4px rgba(16, 185, 129, 0.3);
 }
+
 /* Dark mode support */
-.dark-mode .nav-item-catalogue {
+.dark-mode .nav-catalogue-link {
     color: #34d399;
     border-color: rgba(52, 211, 153, 0.2);
-        background: linear-gradient(135deg, rgba(52, 211, 153, 0.08) 0%, rgba(16, 185, 129, 0.04) 100%);
+    background: linear-gradient(135deg, rgba(52, 211, 153, 0.08) 0%, rgba(16, 185, 129, 0.04) 100%);
 }
 
-.dark-mode .nav-item-catalogue:hover {
+.dark-mode .nav-catalogue-link:hover {
     background: rgba(52, 211, 153, 0.15);
     border-color: rgba(52, 211, 153, 0.4);
     color: #6ee7b7;
     box-shadow: 0 2px 12px rgba(52, 211, 153, 0.15);
-    }
-    
-    .dark-mode .catalogue-badge {
-        background: linear-gradient(135deg, #34d399, #10b981);
+}
+
+.dark-mode .catalogue-badge {
+    background: linear-gradient(135deg, #34d399, #10b981);
 }

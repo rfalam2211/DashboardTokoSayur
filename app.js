@@ -186,6 +186,8 @@ function filterNavigationByRole() {
 
     navItems.forEach(item => {
         const page = item.dataset.page;
+        // Lewati link eksternal (tidak punya data-page), misal: Katalog Publik
+        if (!page) return;
         if (!allowedPages.includes(page)) {
             item.classList.add('hidden');
         }
@@ -199,6 +201,10 @@ function setupNavigation() {
     const navItems = document.querySelectorAll('.nav-item');
 
     navItems.forEach(item => {
+        // Lewati link eksternal (tidak punya data-page) — biarkan browser
+        // buka di tab baru sesuai target="_blank"
+        if (!item.dataset.page) return;
+
         item.addEventListener('click', async (e) => {
             e.preventDefault();
             const page = item.dataset.page;
