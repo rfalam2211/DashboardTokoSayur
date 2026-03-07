@@ -28,11 +28,12 @@
 </head>
 
 <body>
-    <!-- Mobile Menu Button -->
+    <!-- Mobile Top Header -->
     <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle Menu">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
         </svg>
+        <span class="mobile-app-title">Ida Groceries</span>
     </button>
 
     <!-- Sidebar Overlay -->
@@ -551,9 +552,24 @@
                             </select>
                         </div>
                         <div id="credit-customer-container" class="payment-method" style="display: none;">
-                            <label>Nama Pelanggan:</label>
-                            <input type="text" id="credit-customer-name" class="input"
-                                placeholder="Masukkan nama pelanggan..." autocomplete="off">
+                            <!-- Pilih pelanggan terdaftar -->
+                            <label>Pelanggan:</label>
+                            <select id="credit-customer-select" class="select-input">
+                                <option value="">-- Pilih Pelanggan --</option>
+                                <option value="__new__">+ Pelanggan Baru</option>
+                            </select>
+                            <!-- Input pelanggan baru (toggle) -->
+                            <div id="new-customer-input" style="display:none; margin-top: 0.5rem;">
+                                <input type="text" id="credit-customer-name" class="input"
+                                    placeholder="Nama pelanggan baru..." autocomplete="off">
+                            </div>
+                            <!-- Tanggal jatuh tempo -->
+                            <label style="margin-top:0.75rem;">Jatuh Tempo:</label>
+                            <input type="date" id="credit-due-date" class="input">
+                            <!-- Info hutang -->
+                            <div id="customer-debt-info" style="display:none; margin-top:0.5rem;
+                                padding: 0.5rem 0.75rem; background: #fef3c7;
+                                border-radius: 0.5rem; font-size: 0.8rem; color: #92400e;"></div>
                         </div>
                         <button class="btn btn-primary btn-block" id="process-transaction-btn" disabled>
                             Proses Transaksi

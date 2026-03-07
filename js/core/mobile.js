@@ -35,52 +35,8 @@ function detectMobile() {
  * Setup mobile navigation (hamburger menu)
  */
 function setupMobileNavigation() {
-    if (!isMobile) return;
-
-    // Create hamburger button
-    const header = document.querySelector('.page-header') || document.querySelector('.main-content');
-    if (!header) return;
-
-    const hamburger = document.createElement('button');
-    hamburger.className = 'hamburger-menu';
-    hamburger.innerHTML = `
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-    `;
-    hamburger.setAttribute('aria-label', 'Toggle menu');
-
-    // Insert at the beginning of header
-    if (header.firstChild) {
-        header.insertBefore(hamburger, header.firstChild);
-    } else {
-        header.appendChild(hamburger);
-    }
-
-    const sidebar = document.querySelector('.sidebar');
-    
-    // Toggle sidebar
-    hamburger.addEventListener('click', () => {
-        sidebar.classList.toggle('mobile-open');
-        document.body.classList.toggle('sidebar-open');
-    });
-
-    // Close sidebar when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!sidebar.contains(e.target) && !hamburger.contains(e.target)) {
-            sidebar.classList.remove('mobile-open');
-            document.body.classList.remove('sidebar-open');
-        }
-    });
-
-    // Close sidebar when navigating
-    const navItems = document.querySelectorAll('.nav-item');
-    navItems.forEach(item => {
-        item.addEventListener('click', () => {
-            sidebar.classList.remove('mobile-open');
-            document.body.classList.remove('sidebar-open');
-        });
-    });
+    // Semua logika hamburger & sidebar sudah dikelola mobile-menu.js
+    // Fungsi ini tidak perlu menambah listener lagi untuk menghindari konflik
 }
 
 /**

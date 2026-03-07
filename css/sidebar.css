@@ -79,23 +79,27 @@ body.sidebar-collapsed .sidebar-toggle-btn .toggle-icon {
 .sidebar-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.45);
     z-index: 99;
     opacity: 0;
     pointer-events: none;
-    transition: opacity var(--transition-base);
-    backdrop-filter: blur(2px);
+    transition: opacity 0.25s ease;
+        /* backdrop-filter hanya saat active agar tidak mempengaruhi layout saat tersembunyi */
 }
 
 .sidebar-overlay.active {
     opacity: 1;
     pointer-events: auto;
+    backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
 }
 
-/* ---- Old mobile-menu-btn (hidden, replaced by toggle) ---- */
+/* ---- Mobile Top Header (hamburger + app title) ---- */
+/* Tersembunyi di desktop, tampil di mobile via responsive.css */
 .mobile-menu-btn {
-    display: none !important;
+    display: none;
 }
+
 
 /* ---- Sidebar Header ---- */
 .sidebar-header {

@@ -310,17 +310,36 @@ async function processTransaction() {
     const totalDiscount = cart.reduce((sum, item) => sum + (item.discount || 0), 0);
     const total = subtotal - totalDiscount;
 
-    // Check for credit sales
+    // Validasi kredit
+    let creditCustomerName = '';
+    let creditCustomerId = null;
     if (paymentMethod === 'credit') {
-        const customerName = document.getElementById('credit-customer-name')?.value.trim();
-        if (!customerName) {
-            showToast('Masukkan nama pelanggan untuk penjualan kredit', 'warning');
+        const select = document.getElementById('credit-customer-select');
+        const selectVal = select ? select.value : '';
+
+        if (selectVal === '__new__' || selectVal === '') {
+            // Pelanggan baru atau tidak dipilih
+            creditCustomerName = document.getElementById('credit-customer-name')?.value.trim();
+            if (!creditCustomerName) {
+                showToast('Pilih pelanggan atau masukkan nama pelanggan baru', 'warning');
+                return;
+            }
+        } else {
+            // Pelanggan terdaftar
+            creditCustomerId = selectVal;
+            const opt = select.options[select.selectedIndex];
+            creditCustomerName = opt.dataset.name || opt.textContent.split('(')[0].trim();
+        }
+
+        // Validasi tanggal jatuh tempo
+        const dueDateInput = document.getElementById('credit-due-date');
+        if (!dueDateInput?.value) {
+            showToast('Masukkan tanggal jatuh tempo pembayaran', 'warning');
             return;
         }
     }
 
     try {
-        // Create transaction
         const transactionData = {
             items: cart.map(item => ({
                 productId: item.id,
@@ -337,63 +356,60 @@ async function processTransaction() {
 
         const transactionId = await addTransaction(transactionData);
 
-        // Handle credit sales
+        // Handle kredit/hutang
         if (paymentMethod === 'credit') {
-            const customerName = document.getElementById('credit-customer-name').value.trim();
+            const dueDateVal = document.getElementById('credit-due-date').value;
 
-            // Check if customer exists, if not create new one
             let customer = null;
-            const allCustomers = await getAllCustomers();
-            customer = allCustomers.find(c => c.name.toLowerCase() === customerName.toLowerCase());
-
-            if (!customer) {
-                // Create new customer
-                const newCustomer = {
-                    name: customerName,
-                    phone: '',
-                    address: '',
-                    totalDebt: total
-                };
-                const customerId = await addCustomer(newCustomer);
-                customer = { id: customerId, ...newCustomer };
-                showToast(`Pelanggan baru "${customerName}" berhasil ditambahkan`, 'info');
+            if (creditCustomerId) {
+                // Pelanggan terdaftar
+                customer = await getCustomer(creditCustomerId);
+            } else {
+            // Cek apakah nama sudah ada
+                const allCustomers = await getAllCustomers();
+                customer = allCustomers.find(c =>
+                    c.name.toLowerCase() === creditCustomerName.toLowerCase()
+                );
+                if (!customer) {
+                    // Buat pelanggan baru
+                    const newCustomer = { name: creditCustomerName, phone: '', address: '', totalDebt: total };
+                    const newId = await addCustomer(newCustomer);
+                    customer = { id: newId, ...newCustomer };
+                    showToast(`Pelanggan baru "${creditCustomerName}" ditambahkan`, 'info');
+                }
             }
 
-            // Create debt record
-            const dueDate = new Date();
-            dueDate.setDate(dueDate.getDate() + 30); // 30 days from now
-
+            // Catat hutang
             await addDebt({
                 customerId: customer.id,
                 customerName: customer.name,
                 transactionId: transactionId,
                 amount: total,
-                dueDate: dueDate.toISOString().split('T')[0],
-                notes: `Transaksi #${transactionId}`
+                dueDate: dueDateVal,
+                notes: `Transaksi Kasir #${transactionId}`
             });
 
-            showToast(`Penjualan kredit berhasil untuk ${customer.name}`, 'success');
+            showToast(`Hutang Rp ${total.toLocaleString('id-ID')} dicatat untuk ${customer.name} — jatuh tempo ${dueDateVal}`, 'success');
         } else {
             showToast('Transaksi berhasil!', 'success');
         }
 
-        // Update stock for each item
+        // Update stok
         for (const item of cart) {
             await updateStock(item.id, -item.quantity);
         }
 
-        // Clear cart
+        // Bersihkan keranjang
         cart = [];
         renderCart();
 
-        // Reset payment method and customer input
+        // Reset metode pembayaran
         document.getElementById('payment-method').value = 'cash';
         toggleCreditCustomerSelect();
 
-        // Reload products
+        // Reload produk
         await loadPOSProducts();
 
-        // Refresh dashboard if on dashboard page
         if (document.getElementById('dashboard-page').classList.contains('active')) {
             await refreshDashboard();
         }
@@ -431,28 +447,93 @@ function scanBarcodeInPOS() {
 }
 
 /**
- * Toggle credit customer input visibility
+ * Toggle credit customer input visibility & load customers
  */
-function toggleCreditCustomerSelect() {
+async function toggleCreditCustomerSelect() {
     const paymentMethod = document.getElementById('payment-method').value;
     const creditContainer = document.getElementById('credit-customer-container');
-
     if (!creditContainer) return;
 
     if (paymentMethod === 'credit') {
         creditContainer.style.display = 'block';
-        // Focus on input when shown
-        const input = document.getElementById('credit-customer-name');
-        if (input) {
-            setTimeout(() => input.focus(), 100);
+
+        // Set default due date = 30 hari dari sekarang
+        const dueDateInput = document.getElementById('credit-due-date');
+        if (dueDateInput && !dueDateInput.value) {
+            const d = new Date();
+            d.setDate(d.getDate() + 30);
+            dueDateInput.value = d.toISOString().split('T')[0];
         }
+
+        // Load pelanggan ke dropdown
+        const select = document.getElementById('credit-customer-select');
+        if (select && select.options.length <= 2) { // belum diisi
+            try {
+                const customers = await getAllCustomers();
+                // Simpan opsi default
+                const defaultOpt = select.options[0];
+                const newOpt = select.options[1];
+                select.innerHTML = '';
+                select.appendChild(defaultOpt);
+                customers.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = c.name + (c.phone ? ` (${c.phone})` : '');
+                    opt.dataset.name = c.name;
+                    select.appendChild(opt);
+                });
+                select.appendChild(newOpt);
+            } catch (e) {
+                console.warn('Gagal load pelanggan:', e);
+            }
+        }
+
+        // Event: saat pilih pelanggan
+        select.onchange = async () => {
+            const val = select.value;
+            const newInput = document.getElementById('new-customer-input');
+            const debtInfo = document.getElementById('customer-debt-info');
+
+            if (val === '__new__') {
+                newInput.style.display = 'block';
+                document.getElementById('credit-customer-name').focus();
+                if (debtInfo) debtInfo.style.display = 'none';
+            } else {
+                newInput.style.display = 'none';
+                // Tampilkan info hutang aktif pelanggan ini
+                if (val && debtInfo) {
+                    try {
+                        const allDebts = await getAllDebts ? await getAllDebts() : [];
+                        const activeDebts = allDebts.filter(d =>
+                            d.customerId === val && d.status !== 'paid'
+                        );
+                        if (activeDebts.length > 0) {
+                            const total = activeDebts.reduce((s, d) => s + (d.remaining || d.amount), 0);
+                            debtInfo.style.display = 'block';
+                            debtInfo.textContent = `⚠️ Pelanggan ini memiliki ${activeDebts.length} hutang aktif senilai ${formatCurrency(total)}`;
+                        } else {
+                            debtInfo.style.display = 'none';
+                        }
+                    } catch (e) {
+                        debtInfo.style.display = 'none';
+                    }
+                } else {
+                    if (debtInfo) debtInfo.style.display = 'none';
+                }
+            }
+        };
+
     } else {
         creditContainer.style.display = 'none';
-        // Clear input when hidden
-        const input = document.getElementById('credit-customer-name');
-        if (input) {
-            input.value = '';
-        }
+        // Reset
+        const select = document.getElementById('credit-customer-select');
+        if (select) select.value = '';
+        const nameInput = document.getElementById('credit-customer-name');
+        if (nameInput) nameInput.value = '';
+        const newInput = document.getElementById('new-customer-input');
+        if (newInput) newInput.style.display = 'none';
+        const debtInfo = document.getElementById('customer-debt-info');
+        if (debtInfo) debtInfo.style.display = 'none';
     }
 }
 

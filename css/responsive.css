@@ -65,45 +65,66 @@
 }
 }
 
-/* ===================== MOBILE (max-width: 640px) ===================== */
-@media (max-width: 640px) {
+/* ===================== MOBILE (max-width: 768px) ===================== */
+@media (max-width: 768px) {
     /* Sembunyikan toggle desktop di mobile */
     .sidebar-toggle-btn {
-            display: none;
+        display: none;
         }
 
     /* Sidebar mobile: slide dari kiri */
     .sidebar {
         position: fixed;
         left: -280px;
+        top: 0;
         width: 280px;
+        height: 100vh;
         z-index: 1000;
         transition: left 0.3s ease-in-out;
         box-shadow: var(--shadow-xl);
     }
 
-    .sidebar.active      { left: 0; }
-    .hamburger-menu      { display: flex; }
+                                                                /* Sidebar terbuka: geser masuk dari kiri */
+                                                                .sidebar.active {
+                                                                    left: 0;
+                                                                }
 
-    /* Sidebar collapsed di mobile = transform override */
-    body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
-
-        /* Main content full width di mobile — tambah padding-top untuk hamburger button */
+                                                                /* Main content full width di mobile */
     .main-content {
         margin-left: 0 !important;
-        padding: 4.5rem var(--spacing-md) var(--spacing-md);
+        padding-top: 72px;
     }
 
-    /* Show sidebar-overlay dari mobile.js (body.sidebar-open) */
-    body.sidebar-open::before {
-        content: '';
+                /* Hamburger / Mobile Top Header */
+                .mobile-menu-btn {
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: flex-start;
         position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 99;
-        animation: fadeIn var(--transition-fast);
+        top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            height: 56px;
+            background: #ffffff;
+            border: none;
+            border-bottom: 1px solid #f3f4f6;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            z-index: 1001;
+            cursor: pointer;
+            color: #374151;
+            padding: 0 1rem;
+            gap: 0.75rem;
+            font-family: inherit;
+        }
+        
+        .mobile-menu-btn .mobile-app-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #111827;
     }
 
+                                /* Overlay ditangani oleh #sidebar-overlay element */
     /* Layout */
     .page-header {
         flex-direction: column;
@@ -113,6 +134,7 @@
     }
     .page-header h2    { font-size: 1.5rem; }
     .page-header .btn  { width: 100%; justify-content: center; }
+
 
     .stats-grid     { grid-template-columns: 1fr; gap: var(--spacing-md); }
     .dashboard-grid { grid-template-columns: 1fr; }
@@ -133,13 +155,40 @@
     table { min-width: 600px; }
     th, td { padding: var(--spacing-sm); font-size: 0.8rem; }
 
-    /* POS */
-    .pos-grid { grid-template-columns: 1fr; }
-    .pos-cart { position: sticky; bottom: 0; max-height: 50vh; }
-    .products-grid { grid-template-columns: repeat(2, 1fr); gap: var(--spacing-sm); }
+        /* POS / Kasir — layout vertikal di mobile */
+        .pos-grid {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+    
+        .pos-cart {
+            position: static;
+            /* tidak sticky, tidak menimpa */
+            max-height: none;
+            order: 2;
+            /* keranjang di bawah produk */
+        }
+    
+        .pos-products {
+            order: 1;
+            /* produk di atas */
+        }
+    
+        .products-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--spacing-sm);
+            max-height: 45vh;
+            /* produk scrollable dengan tinggi terbatas */
+        }
+    
+        .cart-items-list {
+            max-height: 30vh;
+        }
     .product-item { padding: var(--spacing-sm); }
     .product-item h4 { font-size: 0.875rem; }
     .product-item .price { font-size: 0.95rem; }
+
 
     /* Touch-friendly */
     .btn     { min-height: 44px; padding: var(--spacing-md) var(--spacing-lg); }
