@@ -193,16 +193,16 @@ function openExpenseModal(expenseId = null) {
         if (expense) {
             title.textContent = 'Edit Pengeluaran';
             document.getElementById('expense-id').value = expense.id;
-            document.getElementById('expense-date').value = expense.date;
+            setDateInput('expense-date', expense.date);
             document.getElementById('expense-category').value = expense.category;
-            document.getElementById('expense-amount').value = expense.amount;
+            document.getElementById('expense-amount').value = new Intl.NumberFormat('id-ID').format(expense.amount);
             document.getElementById('expense-description').value = expense.description || '';
             document.getElementById('expense-payment-method').value = expense.paymentMethod || 'cash';
             editingExpenseId = expenseId;
         }
     } else {
         title.textContent = 'Tambah Pengeluaran';
-        document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
+        setDateInput('expense-date', new Date().toISOString().split('T')[0]);
         editingExpenseId = null;
     }
 
@@ -226,7 +226,7 @@ async function handleExpenseSubmit(e) {
     const id = document.getElementById('expense-id').value;
     const date = document.getElementById('expense-date').value;
     const category = document.getElementById('expense-category').value;
-    const amount = parseFloat(document.getElementById('expense-amount').value);
+    const amount = parseNumber(document.getElementById('expense-amount').value);
     const description = document.getElementById('expense-description').value;
     const paymentMethod = document.getElementById('expense-payment-method').value;
 

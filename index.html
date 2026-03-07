@@ -23,6 +23,10 @@
     <script src="https://unpkg.com/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
     <!-- Supabase Client Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Flatpickr Date Picker Library -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/id.js"></script>
     <!-- Theme: load FIRST to prevent flash -->
     <script src="js/core/theme.js"></script>
 </head>
@@ -145,6 +149,16 @@
                 </svg>
                 <span>Laporan</span>
             </a>
+<a href="#expenses" class="nav-item" data-page="expenses">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+            d="M4 4H16C17.1046 4 18 4.89543 18 6V14C18 15.1046 17.1046 16 16 16H4C2.89543 16 2 15.1046 2 14V6C2 4.89543 2.89543 4 4 4Z"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M2 10H18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M12 16V10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+    <span>Pengeluaran</span>
+</a>
 <!-- Divider: Manajemen -->
 <div style="height:1px; background:var(--color-gray-200,#e5e7eb); margin:0.5rem 0.75rem;"></div>
 
@@ -565,7 +579,7 @@
                             </div>
                             <!-- Tanggal jatuh tempo -->
                             <label style="margin-top:0.75rem;">Jatuh Tempo:</label>
-                            <input type="date" id="credit-due-date" class="input">
+                            <input type="text" id="credit-due-date" class="input date-picker" placeholder="dd-mm-yyyy">
                             <!-- Info hutang -->
                             <div id="customer-debt-info" style="display:none; margin-top:0.5rem;
                                 padding: 0.5rem 0.75rem; background: #fef3c7;
@@ -599,11 +613,21 @@
                 <div class="card-header">
                     <div class="filter-group">
                         <label>Dari:</label>
-                        <input type="date" id="filter-date-from" class="input">
+                        <input type="text" id="filter-date-from" class="input date-picker" placeholder="dd-mm-yyyy">
                     </div>
                     <div class="filter-group">
                         <label>Sampai:</label>
-                        <input type="date" id="filter-date-to" class="input">
+                        <input type="text" id="filter-date-to" class="input date-picker" placeholder="dd-mm-yyyy">
+                        </div>
+                        <div class="filter-group">
+                            <label>Metode:</label>
+                            <select id="filter-payment-method" class="select-input">
+                                <option value="">Semua Metode</option>
+                                <option value="cash">Tunai (Cash)</option>
+                                <option value="transfer">Transfer Bank</option>
+                                <option value="qris">QRIS / E-Wallet</option>
+                                <option value="credit">Hutang (Kredit)</option>
+                            </select>
                     </div>
                     <button class="btn btn-secondary" id="filter-transactions-btn">Filter</button>
                     <button class="btn btn-text" id="reset-filter-btn">Reset</button>
@@ -670,9 +694,10 @@
                         <option value="custom">Custom</option>
                     </select>
                     <div id="custom-date-range" class="filter-group" style="display: none;">
-                        <input type="date" id="report-date-from" class="input">
-                        <span>-</span>
-                        <input type="date" id="report-date-to" class="input">
+                        <label>Dari:</label>
+                        <input type="text" id="report-date-from" class="input date-picker" placeholder="dd-mm-yyyy">
+                        <label style="margin-left: 10px;">Sampai:</label>
+                        <input type="text" id="report-date-to" class="input date-picker" placeholder="dd-mm-yyyy">
                     </div>
                 </div>
                 <div class="card-body">
@@ -697,6 +722,67 @@
                 </div>
             </div>
         </section>
+<!-- Expenses Page -->
+<section id="expenses-page" class="page">
+    <header class="page-header">
+        <div>
+            <h2>Pengeluaran Toko</h2>
+            <p class="page-subtitle">Pencatat biaya operasional, pembelian stok, gaji, listrik, dll</p>
+        </div>
+        <button class="btn btn-primary" id="add-expense-btn" data-permission="expenses:create">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+            Tambah Pengeluaran
+        </button>
+    </header>
+
+    <div id="expense-summary" class="summary-cards" style="margin-bottom: 24px; display: flex; gap: 16px;">
+        <!-- Summary inserted dynamically -->
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="filter-group">
+                <label>Kategori:</label>
+                <select id="expense-category-filter" class="select-input expense-category-select">
+                    <!-- Populated dynamically -->
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Waktu:</label>
+                <select id="expense-date-filter" class="select-input">
+                    <option value="today">Hari Ini</option>
+                    <option value="yesterday">Kemarin</option>
+                    <option value="last7days">7 Hari Terakhir</option>
+                    <option selected value="thismonth">Bulan Ini</option>
+                    <option value="lastmonth">Bulan Lalu</option>
+                    <option value="all">Semua Waktu</option>
+                </select>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-container">
+                <table id="expenses-table">
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>Kategori</th>
+                            <th>Nominal</th>
+                            <th>Keterangan</th>
+                            <th>Pembayaran</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expenses-tbody">
+                        <!-- Data inserted dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
         <!-- Users Page -->
         <section id="users-page" class="page">
             <header class="page-header">
@@ -902,11 +988,23 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="discount-valid-from">Berlaku Dari *</label>
-                        <input type="date" id="discount-valid-from" class="input" required>
+                        <div class="input-with-icon">
+                            <input type="text" id="discount-valid-from" class="input date-picker" placeholder="dd-mm-yyyy" required>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" class="input-icon">
+                                <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                    d="M6 2v4M14 2v4M3 8h14M5 4h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" />
+                            </svg>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="discount-valid-to">Berlaku Sampai</label>
-                        <input type="date" id="discount-valid-to" class="input">
+                        <div class="input-with-icon">
+                            <input type="text" id="discount-valid-to" class="input date-picker" placeholder="dd-mm-yyyy">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" class="input-icon">
+                                <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                    d="M6 2v4M14 2v4M3 8h14M5 4h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" />
+                            </svg>
+                        </div>
                         <small class="form-hint">Kosongkan untuk tidak terbatas</small>
                     </div>
                 </div>
@@ -1092,11 +1190,11 @@
                 </div>
                 <div class="form-group">
                     <label for="debt-amount">Jumlah Hutang (Rp) *</label>
-                    <input type="number" id="debt-amount" class="input" min="0" required>
+                    <input type="text" id="debt-amount" class="input format-number" inputmode="numeric" required>
                 </div>
                 <div class="form-group">
                     <label for="debt-due-date">Jatuh Tempo *</label>
-                    <input type="date" id="debt-due-date" class="input" required>
+                    <input type="text" id="debt-due-date" class="input date-picker" placeholder="dd-mm-yyyy" required>
                 </div>
                 <div class="form-group">
                     <label for="debt-notes">Catatan</label>
@@ -1125,7 +1223,7 @@
                 </div>
                 <div class="form-group">
                     <label for="payment-amount">Jumlah Bayar (Rp) *</label>
-                    <input type="number" id="payment-amount" class="input" min="0" required>
+                    <input type="text" id="payment-amount" class="input format-number" inputmode="numeric" required>
                 </div>
                 <div class="form-group">
                     <label for="payment-method">Metode Pembayaran *</label>
@@ -1143,6 +1241,72 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-text" id="cancel-payment-btn">Batal</button>
                     <button type="submit" class="btn btn-primary">Simpan Pembayaran</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Debt History Modal -->
+    <div id="debt-history-modal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>Riwayat Hutang</h3>
+                <button class="modal-close" id="close-debt-history-modal">&times;</button>
+            </div>
+            <div id="debt-history-content" class="transaction-detail" style="max-height: 400px; overflow-y: auto;">
+                <!-- History injects here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary w-full" id="btn-close-debt-history"
+                    style="width: 100%;">Tutup</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal for Expense Form -->
+    <div id="expense-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="expense-modal-title">Tambah Pengeluaran</h3>
+                <button type="button" class="modal-close" id="close-expense-modal">&times;</button>
+            </div>
+            <form id="expense-form">
+                <div class="form-group mb-4" style="border-bottom: 1px solid var(--color-gray-200); padding-bottom: 20px;">
+                    <label for="expense-amount">Nominal Pengeluaran (Rp) *</label>
+                    <input type="text" inputmode="numeric" id="expense-amount" class="input format-number"
+                        style="font-size: 1.5rem; font-weight: bold; color: var(--color-danger); height: 50px;" required
+                        placeholder="0">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="expense-date">Tanggal *</label>
+                        <input type="text" id="expense-date" class="input date-picker" placeholder="dd-mm-yyyy" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="expense-category">Kategori *</label>
+                        <select id="expense-category" class="select-input expense-category-select" required>
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="expense-description">Keterangan / Rincian Singkat</label>
+                    <input type="text" id="expense-description" class="input"
+                        placeholder="Contoh: Beli token listrik di warung sebelah">
+                </div>
+                <div class="form-group">
+                    <label for="expense-payment-method">Dimana Uang Keluar?</label>
+                    <select id="expense-payment-method" class="select-input" required>
+                        <option value="Kas Tunai">Laci Kasir (Cash)</option>
+                        <option value="Transfer Bank">Transfer Bank / ATM</option>
+                        <option value="E-Wallet">Dompet Digital (Gopay/Ovo/dll)</option>
+                    </select>
+                </div>
+    
+                <input type="hidden" id="expense-id">
+                <div class="modal-footer" style="margin-top: 24px;">
+                    <button type="button" class="btn btn-text" id="cancel-expense-btn">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Pengeluaran</button>
                 </div>
             </form>
         </div>
@@ -1249,11 +1413,11 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="product-price">Harga (Rp) *</label>
-                        <input type="number" id="product-price" class="input" min="0" required>
+                        <input type="text" id="product-price" class="input format-number" inputmode="numeric" required>
                     </div>
                     <div class="form-group">
-                        <label for="product-stock">Stok *</label>
-                        <input type="number" id="product-stock" class="input" min="0" required>
+                        <label for="product-stock">Stok Awal *</label>
+                        <input type="text" id="product-stock" class="input format-number" inputmode="numeric" required>
                     </div>
                 </div>
                 <input type="hidden" id="product-id">
@@ -1311,6 +1475,25 @@
         </div>
     </div>
 
+    <!-- Receipt Preview Modal -->
+    <div id="receipt-preview-modal" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h3>Preview Struk</h3>
+                <button class="modal-close"
+                    onclick="document.getElementById('receipt-preview-modal').classList.remove('active')">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 0; background: #f9f9f9;">
+                <iframe id="receipt-preview-frame"
+                    style="width: 100%; height: 400px; border: none; display: block; background: white;"></iframe>
+            </div>
+            <div class="modal-footer" style="background: white; border-top: 1px solid var(--color-gray-200);">
+                <button type="button" class="btn btn-secondary"
+                    onclick="document.getElementById('receipt-preview-modal').classList.remove('active')">Tutup</button>
+                <button type="button" class="btn btn-primary" id="final-print-btn">Cetak Struk</button>
+            </div>
+        </div>
+    </div>
     <!-- Toast Notification -->
     <div id="toast" class="toast"></div>
 

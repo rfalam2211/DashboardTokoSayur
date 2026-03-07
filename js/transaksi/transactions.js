@@ -31,10 +31,10 @@ function setupTransactionsEventListeners() {
     // Print receipt
     document.getElementById('print-receipt-btn').addEventListener('click', printReceipt);
 
-    // Set default date range to today
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('filter-date-from').value = today;
-    document.getElementById('filter-date-to').value = today;
+    // Reset filter values and load all (default UI state matches data)
+    setDateInput('filter-date-from', '');
+    setDateInput('filter-date-to', '');
+    document.getElementById('filter-payment-method').value = '';
 }
 
 /**
@@ -99,28 +99,41 @@ function renderTransactions(transactions) {
 async function applyTransactionFilter() {
     const fromDate = document.getElementById('filter-date-from').value;
     const toDate = document.getElementById('filter-date-to').value;
+    const paymentMethod = document.getElementById('filter-payment-method').value;
 
-    if (!fromDate || !toDate) {
-        showToast('Pilih tanggal mulai dan akhir', 'warning');
+    let filter = {};
+
+    if (fromDate && toDate) {
+        const from = new Date(fromDate);
+        from.setHours(0, 0, 0, 0);
+
+        const to = new Date(toDate);
+        to.setHours(23, 59, 59, 999);
+
+        filter.from = from;
+        filter.to = to;
+    } else if (fromDate || toDate) {
+        showToast('Pilih tanggal mulai dan akhir jika ingin filter tanggal', 'warning');
         return;
     }
 
-    const from = new Date(fromDate);
-    from.setHours(0, 0, 0, 0);
+    if (paymentMethod) {
+        filter.paymentMethod = paymentMethod;
+    }
 
-    const to = new Date(toDate);
-    to.setHours(23, 59, 59, 999);
-
-    await loadTransactions({ from, to });
+    // Jika filter kosong, berarti tampilkan semua
+    await loadTransactions(Object.keys(filter).length > 0 ? filter : null);
 }
 
 /**
  * Reset transaction filter
  */
 async function resetTransactionFilter() {
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('filter-date-from').value = today;
-    document.getElementById('filter-date-to').value = today;
+    // Kosongkan input date & payment method (Reset)
+    setDateInput('filter-date-from', '');
+    setDateInput('filter-date-to', '');
+    document.getElementById('filter-payment-method').value = '';
+    // Memuat seluruh (ALL) transaksi
     await loadTransactions();
 }
 

@@ -169,8 +169,8 @@ function openDiscountModal(discount = null) {
         document.getElementById('discount-type').value = discount.type;
         document.getElementById('discount-value').value = discount.value;
         document.getElementById('discount-applicable-to').value = discount.applicableTo;
-        document.getElementById('discount-valid-from').value = discount.validFrom.split('T')[0];
-        document.getElementById('discount-valid-to').value = discount.validTo ? discount.validTo.split('T')[0] : '';
+        setDateInput('discount-valid-from', discount.validFrom.split('T')[0]);
+        setDateInput('discount-valid-to', discount.validTo ? discount.validTo.split('T')[0] : '');
         document.getElementById('discount-active').checked = discount.active;
         editingDiscountId = discount.id;
     } else {

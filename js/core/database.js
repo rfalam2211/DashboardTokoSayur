@@ -144,10 +144,15 @@ async function addTransaction(transactionData) {
 
 async function getAllTransactions(filter = null) {
     let query = _db().from('transactions').select('*');
-    if (filter && filter.from && filter.to) {
-        query = query
-            .gte('created_at', filter.from.toISOString())
-            .lt('created_at', filter.to.toISOString());
+    if (filter) {
+        if (filter.from && filter.to) {
+            query = query
+                .gte('created_at', filter.from.toISOString())
+                .lt('created_at', filter.to.toISOString());
+        }
+        if (filter.paymentMethod) {
+            query = query.eq('payment_method', filter.paymentMethod);
+        }
     }
     const { data, error } = await query.order('created_at', { ascending: false });
     if (error) throw error;

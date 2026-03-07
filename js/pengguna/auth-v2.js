@@ -175,10 +175,10 @@ function getAllowedPages() {
     if (!user) return [];
     if (user.role === 'admin' || user.role === 'developer') {
         return ['dashboard', 'products', 'pos', 'transactions', 'reports',
-            'discounts', 'customers', 'debts', 'users'];
+            'discounts', 'customers', 'debts', 'expenses', 'users'];
     }
     if (user.role === 'kasir') {
-        return ['pos', 'transactions', 'customers', 'debts'];
+        return ['pos', 'transactions', 'customers', 'debts', 'expenses'];
     }
     return [];
 }

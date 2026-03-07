@@ -72,7 +72,8 @@ async function initApp() {
             const refreshMap = {
                 products: ['products', 'pos', 'dashboard'],
                 transactions: ['transactions', 'dashboard', 'reports'],
-                debts: ['debts', 'customers']
+                debts: ['debts', 'customers'],
+                expenses: ['expenses', 'dashboard', 'reports']
             };
             const pagesToRefresh = refreshMap[table] || [];
             if (pagesToRefresh.includes(currentPage)) {
@@ -95,6 +96,54 @@ async function initApp() {
         const allowedPages = getAllowedPages();
         const firstPage = allowedPages.length > 0 ? allowedPages[0] : 'pos';
         await navigateToPage(firstPage);
+
+        // Initialize number formatting for configured inputs
+        if (typeof setupNumberFormatter === 'function') {
+            setupNumberFormatter();
+        }
+
+        // Initialize custom flatpickr date pickers for elements with .date-picker
+        if (typeof flatpickr !== 'undefined') {
+            const fpConfig = {
+                dateFormat: "Y-m-d",        // Actual value submitted/read
+                altInput: true,             // Show an alternate visually pleasing input
+                altFormat: "d-m-Y",         // Visual format display
+                locale: "id",               // Indonesian language
+                allowInput: true            // Allow typing manually
+            };
+
+            // Initialize all .date-picker elements first
+            flatpickr(".date-picker", fpConfig);
+
+            // Helper function to link "From" and "To" date pickers
+            const linkDatePairs = (fromId, toId) => {
+                const fromEl = document.getElementById(fromId);
+                const toEl = document.getElementById(toId);
+
+                if (fromEl && toEl && fromEl._flatpickr && toEl._flatpickr) {
+                    fromEl._flatpickr.set('onChange', function (selectedDates) {
+                        if (selectedDates.length > 0) {
+                            toEl._flatpickr.set('minDate', selectedDates[0]);
+                        } else {
+                            toEl._flatpickr.set('minDate', null);
+                        }
+                    });
+
+                    toEl._flatpickr.set('onChange', function (selectedDates) {
+                        if (selectedDates.length > 0) {
+                            fromEl._flatpickr.set('maxDate', selectedDates[0]);
+                        } else {
+                            fromEl._flatpickr.set('maxDate', null);
+                        }
+                    });
+                }
+            };
+
+            // Link date ranges for safety
+            linkDatePairs('filter-date-from', 'filter-date-to');       // Halaman Transaksi
+            linkDatePairs('report-date-from', 'report-date-to');       // Halaman Laporan
+            linkDatePairs('discount-valid-from', 'discount-valid-to'); // Halaman Diskon
+        }
 
         console.log('Application initialized successfully (Supabase Cloud + Realtime)');
 
@@ -277,6 +326,9 @@ async function navigateToPage(pageName) {
                 break;
             case 'debts':
                 await initDebts();
+                break;
+            case 'expenses':
+                await initExpenses();
                 break;
             case 'users':
                 await initUsers();

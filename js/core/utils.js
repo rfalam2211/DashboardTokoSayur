@@ -12,6 +12,48 @@ function formatCurrency(amount) {
     }).format(amount || 0);
 }
 
+/**
+ * Parses formatted string like "10.500" or "10500" to number 10500
+ */
+function parseNumber(value) {
+    if (!value) return 0;
+    if (typeof value === 'number') return value;
+    // Hapus karakter non-digit kecuali koma (,) jika kita ingin mendukung desimal
+    // Untuk formatRibuan dengan titik, kita hilangkan titiknya.
+    const cleanStr = value.toString().replace(/\./g, '');
+    let parsed = parseFloat(cleanStr);
+    return isNaN(parsed) ? 0 : parsed;
+}
+
+/**
+ * Global function to format number inputs as users type
+ * Call this in initApp or set event listener directly
+ */
+function setupNumberFormatter() {
+    document.addEventListener('input', function (e) {
+        if (e.target && e.target.classList.contains('format-number')) {
+            // Get cursor position
+            const start = e.target.selectionStart;
+            const originalLength = e.target.value.length;
+
+            // Remove non-digits
+            let val = e.target.value.replace(/[^0-9]/g, '');
+            if (val === '') {
+                e.target.value = '';
+                return;
+            }
+            // Format number
+            const formatted = new Intl.NumberFormat('id-ID').format(parseInt(val, 10));
+            e.target.value = formatted;
+
+            // Restore cursor position intelligently
+            const newLength = formatted.length;
+            const posDiff = newLength - originalLength;
+            e.target.setSelectionRange(start + posDiff, start + posDiff);
+        }
+    });
+}
+
 function formatDate(date, includeTime = false) {
     if (!date) return '—';
     const d = new Date(date);
@@ -58,6 +100,27 @@ function showToast(message, type = 'info') {
     _toastTimer = setTimeout(() => {
         toast.classList.remove('show');
     }, 3500);
+}
+
+// ===== DATE INPUT HELPER =====
+
+/**
+ * Sets the value of a date input safely, taking Flatpickr instances into account.
+ * @param {string} id - The element ID
+ * @param {string} value - The date string (YYYY-MM-DD or ISO) or empty string to clear
+ */
+function setDateInput(id, value) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el._flatpickr) {
+        if (!value) {
+            el._flatpickr.clear();
+        } else {
+            el._flatpickr.setDate(value);
+        }
+    } else {
+        el.value = value || '';
+    }
 }
 
 // ===== FORM VALIDATION =====

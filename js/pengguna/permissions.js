@@ -26,7 +26,7 @@ const PERMISSIONS = {
         discounts: [],
         customers: ['view'],
         debts: ['view'],
-        expenses: [],
+        expenses: ['view', 'create'],
         activityLogs: [],
         settings: []
     },

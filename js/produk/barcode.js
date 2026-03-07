@@ -65,7 +65,8 @@ async function startScanning(elementId = 'barcode-scanner-container') {
 
     } catch (error) {
         console.error('Error starting scanner:', error);
-        showToast('Gagal memulai scanner: ' + error.message, 'error');
+        const errorMsg = error.message || error.name || error || 'Unknown error';
+        showToast('Gagal memulai scanner: ' + errorMsg, 'error');
         isScanning = false;
     }
 }

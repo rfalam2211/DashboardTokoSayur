@@ -60,6 +60,19 @@ function setupPOSEventListeners() {
     if (paymentMethod) {
         paymentMethod.addEventListener('change', toggleCreditCustomerSelect);
     }
+
+    // Modal Print Receipt from Preview
+    const finalPrintBtn = document.getElementById('final-print-btn');
+    if (finalPrintBtn) {
+        finalPrintBtn.addEventListener('click', () => {
+            const frame = document.getElementById('receipt-preview-frame');
+            if (frame && frame.contentWindow) {
+                frame.contentWindow.focus();
+                frame.contentWindow.print();
+                document.getElementById('receipt-preview-modal').classList.remove('active');
+            }
+        });
+    }
 }
 
 /**
@@ -414,6 +427,21 @@ async function processTransaction() {
             await refreshDashboard();
         }
 
+        // Tampilkan preview struk otomatis setelah transaksi sukses
+        const printData = {
+            id: transactionId,
+            date: new Date().toISOString(),
+            ...transactionData
+        };
+
+        if (paymentMethod === 'credit') {
+            printData.paymentMethod = 'Kredit (' + creditCustomerName + ')';
+        }
+
+        if (typeof previewReceipt === 'function') {
+            previewReceipt(printData);
+        }
+
     } catch (error) {
         console.error('Error processing transaction:', error);
         showToast('Gagal memproses transaksi', 'error');
@@ -462,7 +490,7 @@ async function toggleCreditCustomerSelect() {
         if (dueDateInput && !dueDateInput.value) {
             const d = new Date();
             d.setDate(d.getDate() + 30);
-            dueDateInput.value = d.toISOString().split('T')[0];
+            setDateInput('credit-due-date', d.toISOString().split('T')[0]);
         }
 
         // Load pelanggan ke dropdown

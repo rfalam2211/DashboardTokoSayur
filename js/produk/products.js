@@ -284,8 +284,8 @@ function openProductModal(product = null) {
         document.getElementById('product-id').value = product.id;
         document.getElementById('product-name').value = product.name;
         document.getElementById('product-category').value = product.category;
-        document.getElementById('product-price').value = product.price;
-        document.getElementById('product-stock').value = product.stock;
+        document.getElementById('product-price').value = new Intl.NumberFormat('id-ID').format(product.price);
+        document.getElementById('product-stock').value = new Intl.NumberFormat('id-ID').format(product.stock);
         document.getElementById('product-barcode').value = product.barcode || '';
 
         const existingImg = product.image_url || product.imageUrl || '';
@@ -325,8 +325,8 @@ async function handleProductSubmit(e) {
     const productData = {
         name: document.getElementById('product-name').value,
         category: document.getElementById('product-category').value,
-        price: document.getElementById('product-price').value,
-        stock: document.getElementById('product-stock').value,
+        price: parseNumber(document.getElementById('product-price').value),
+        stock: parseNumber(document.getElementById('product-stock').value),
         barcode: document.getElementById('product-barcode').value.trim() || null,
         image_url: (document.getElementById('product-image-url')?.value || '').trim() || null
     };

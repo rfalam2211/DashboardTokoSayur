@@ -59,6 +59,12 @@ function setupDebtsEventListeners() {
     if (statusFilter) {
         statusFilter.addEventListener('change', filterDebts);
     }
+
+    // Debt history modal
+    const closeDebtHistoryBtn = document.getElementById('close-debt-history-modal');
+    const closeHistoryBtn = document.getElementById('btn-close-debt-history');
+    if (closeDebtHistoryBtn) closeDebtHistoryBtn.addEventListener('click', closeDebtHistoryModal);
+    if (closeHistoryBtn) closeHistoryBtn.addEventListener('click', closeDebtHistoryModal);
 }
 
 /**
@@ -232,9 +238,9 @@ function openDebtModal(debt = null) {
     if (debt) {
         title.textContent = 'Edit Hutang';
         document.getElementById('debt-id').value = debt.id;
-        document.getElementById('debt-customer').value = debt.customerId;
-        document.getElementById('debt-amount').value = debt.amount;
-        document.getElementById('debt-due-date').value = debt.dueDate.split('T')[0];
+        document.getElementById('debt-customer').value = debt.customerId; // Changed from debt-customer-id to debt-customer based on original code
+        document.getElementById('debt-amount').value = new Intl.NumberFormat('id-ID').format(debt.amount);
+        setDateInput('debt-due-date', debt.dueDate.split('T')[0]);
         document.getElementById('debt-notes').value = debt.notes || '';
         editingDebtId = debt.id;
     } else {
@@ -242,7 +248,7 @@ function openDebtModal(debt = null) {
         // Set default due date to 30 days from now
         const dueDate = new Date();
         dueDate.setDate(dueDate.getDate() + 30);
-        document.getElementById('debt-due-date').value = dueDate.toISOString().split('T')[0];
+        setDateInput('debt-due-date', dueDate.toISOString().split('T')[0]);
         editingDebtId = null;
     }
 
@@ -264,8 +270,8 @@ function closeDebtModal() {
 async function handleDebtSubmit(e) {
     e.preventDefault();
 
-    const customerId = document.getElementById('debt-customer').value;
-    const amount = parseFloat(document.getElementById('debt-amount').value);
+    const customerId = document.getElementById('debt-customer').value; // Changed from debt-customer-id to debt-customer based on original code
+    const amount = parseNumber(document.getElementById('debt-amount').value);
     const dueDate = document.getElementById('debt-due-date').value;
     const notes = document.getElementById('debt-notes').value;
 
@@ -317,7 +323,8 @@ function openPaymentModal(debtId) {
     document.getElementById('payment-customer-name').textContent = debt.customerName;
     document.getElementById('payment-remaining').textContent = formatCurrency(debt.remaining);
     document.getElementById('payment-amount').max = debt.remaining;
-    document.getElementById('payment-amount').value = debt.remaining;
+    document.getElementById('payment-amount').value = new Intl.NumberFormat('id-ID').format(debt.remaining); // Added Intl.NumberFormat
+    document.getElementById('payment-method').value = 'cash'; // Added default method
     
     modal.classList.add('active');
 }
@@ -337,7 +344,7 @@ async function handlePaymentSubmit(e) {
     e.preventDefault();
 
     const debtId = document.getElementById('payment-debt-id').value;
-    const amount = parseFloat(document.getElementById('payment-amount').value);
+    const amount = parseNumber(document.getElementById('payment-amount').value);
     const method = document.getElementById('payment-method').value;
     const notes = document.getElementById('payment-notes').value;
 
@@ -369,36 +376,82 @@ async function viewDebtHistory(debtId) {
     if (!debt) return;
 
     let historyHTML = `
-        <div class="debt-history">
-            <h4>${debt.customerName}</h4>
-            <p>Total Hutang: ${formatCurrency(debt.amount)}</p>
-            <p>Sisa: ${formatCurrency(debt.remaining)}</p>
-            <h5>Riwayat Pembayaran:</h5>
+        <div style="margin-bottom: 1.5rem;">
+            <h4>Informasi Hutang</h4>
+            <table style="width: 100%; margin-top: 1rem;">
+                <tr>
+                    <td style="padding: 0.5rem 0;"><strong>Pelanggan:</strong></td>
+                    <td style="padding: 0.5rem 0;">${debt.customerName}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.5rem 0;"><strong>Total Hutang:</strong></td>
+                    <td style="padding: 0.5rem 0;"><strong>${formatCurrency(debt.amount)}</strong></td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.5rem 0;"><strong>Sisa Hutang:</strong></td>
+                    <td style="padding: 0.5rem 0;"><strong style="color: var(--color-danger);">${formatCurrency(debt.remaining)}</strong></td>
+                </tr>
+            </table>
+        </div>
+
+        <div>
+            <h4>Riwayat Pembayaran</h4>
+            <table style="width: 100%; margin-top: 1rem;">
+                <thead>
+                    <tr style="background: var(--color-gray-50);">
+                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--color-gray-200);">Tanggal</th>
+                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--color-gray-200);">Metode</th>
+                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--color-gray-200);">Catatan</th>
+                        <th style="padding: 0.75rem; text-align: right; border-bottom: 1px solid var(--color-gray-200);">Nominal</th>
+                    </tr>
+                </thead>
+                <tbody>
     `;
 
     if (debt.payments && debt.payments.length > 0) {
-        historyHTML += '<ul class="payment-history">';
         debt.payments.forEach(payment => {
             historyHTML += `
-                <li>
-                    <strong>${formatDate(payment.date)}</strong> - 
-                    ${formatCurrency(payment.amount)} 
-                    (${payment.method})
-                    ${payment.notes ? `<br><small>${payment.notes}</small>` : ''}
-                </li>
+                <tr>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--color-gray-100);">${formatDate(payment.date)}</td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--color-gray-100);"><span class="badge badge-info">${payment.method}</span></td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--color-gray-100);"><small style="color: var(--color-gray-500);">${payment.notes || '-'}</small></td>
+                    <td style="padding: 0.75rem; text-align: right; border-bottom: 1px solid var(--color-gray-100);"><strong style="color: var(--color-success)">${formatCurrency(payment.amount)}</strong></td>
+                </tr>
             `;
         });
-        historyHTML += '</ul>';
     } else {
-        historyHTML += '<p>Belum ada pembayaran</p>';
+        historyHTML += `
+            <tr>
+                <td colspan="4" style="padding: 2rem 1rem; text-align: center; color: var(--color-gray-500); font-style: italic;">Belum ada pembayaran</td>
+            </tr>
+        `;
     }
 
-    historyHTML += '</div>';
+    historyHTML += `
+                </tbody>
+            </table>
+        </div>
+    `;
 
-    // Show in a simple alert for now (can be enhanced with a modal)
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = historyHTML;
-    alert(tempDiv.textContent);
+    // Show in modal
+    const content = document.getElementById('debt-history-content');
+    if (content) {
+        content.innerHTML = historyHTML;
+        const modal = document.getElementById('debt-history-modal');
+        if (modal) {
+            modal.classList.add('active');
+        }
+    }
+}
+
+/**
+ * Close debt history modal
+ */
+function closeDebtHistoryModal() {
+    const modal = document.getElementById('debt-history-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
 }
 
 /**
