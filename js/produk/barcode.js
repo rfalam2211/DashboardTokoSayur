@@ -54,52 +54,29 @@ async function startScanning(elementId = 'barcode-scanner-container') {
         };
 
         try {
-            // 1. Coba deteksi kamera dan paksa pilih kamera belakang jika tersedia
-            const cameras = await Html5Qrcode.getCameras();
-            if (cameras && cameras.length > 0) {
-                let cameraId = cameras[0].id; // Default ke kamera pertama (bisa jadi depan)
-
-                // Cari kamera yang memiliki kata 'back', 'belakang', atau 'environment' (HP)
-                const backCamera = cameras.find(cam =>
-                    cam.label.toLowerCase().includes('back') ||
-                    cam.label.toLowerCase().includes('belakang') ||
-                    cam.label.toLowerCase().includes('environment') ||
-                    cam.label.toLowerCase().includes('0, facing back')
-                );
-
-                if (backCamera) {
-                    cameraId = backCamera.id;
-                }
-
-                await html5QrcodeScanner.start(
-                    cameraId,
-                    config,
-                    onScanSuccess,
-                    onScanFailure
-                );
-            } else {
-                throw new Error("Daftar kamera tidak ditemukan");
-            }
+            // Gunakan langsung properti facingMode "environment" agar browser HP 
+            // otomatis menggunakan kamera belakang. Proses getCameras() manual 
+            // sering menyebabkan bug pada beberapa OS.
+            await html5QrcodeScanner.start(
+                { facingMode: "environment" },
+                config,
+                onScanSuccess,
+                onScanFailure
+            );
         } catch (errFallback) {
-            console.warn("Pencarian ID kamera gagal, mencoba menggunakan facingMode standar...", errFallback);
+            console.warn("Kamera belakang (environment) tidak terbaca, mencoba kamera depan/default...", errFallback);
 
-            // 2. Jika gagal pakai ID, fallback pakai facingMode environment, kalau gagal lagi turun ke mode default
+            // Fallback level akhir: biarkan browser yang memilih kamera seadanya
             try {
-                await html5QrcodeScanner.start(
-                    { facingMode: "environment" },
-                    config,
-                    onScanSuccess,
-                    onScanFailure
-                );
-            } catch (errUserMode) {
-                console.warn("Kamera belakang (environment) tidak terbaca, mencoba kamera depan/default...", errUserMode);
-                // 3. Fallback level akhir: biarkan browser yang memilih kamera seadanya
                 await html5QrcodeScanner.start(
                     { facingMode: "user" },
                     config,
                     onScanSuccess,
                     onScanFailure
                 );
+            } catch (errFinal) {
+                // If even the user camera fails, throw error upwards to be handled nicely
+                throw new Error("Tidak dapat mengaktifkan kamera depan maupun belakang.");
             }
         }
 
@@ -165,8 +142,8 @@ function onScanSuccess(decodedText, decodedResult) {
         onScanCallback(decodedText, decodedResult);
     }
 
-    // Auto-stop after successful scan
-    stopScanning();
+    // Auto-stop after successful scan and close the modal
+    hideBarcodeScannerModal();
 }
 
 /**
