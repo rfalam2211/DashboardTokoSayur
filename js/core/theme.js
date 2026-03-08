@@ -16,10 +16,8 @@ function initTheme() {
     } else if (saved === 'light') {
         _applyLight(false);
     } else {
-        // Follow OS preference
-        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            _applyDark(false);
-        }
+        // Default selalu mode terang jika belum pernah memilih
+        _applyLight(false);
     }
 
     // Listen for OS theme changes (if user hasn't set a preference)
@@ -36,7 +34,7 @@ function initTheme() {
  * Toggle between dark and light
  */
 function toggleTheme() {
-    const isDark = document.body.classList.contains('dark-mode');
+    const isDark = document.documentElement.classList.contains('dark-mode');
     if (isDark) {
         _applyLight();
         localStorage.setItem(THEME_KEY, 'light');
@@ -47,16 +45,16 @@ function toggleTheme() {
 }
 
 function _applyDark(animate = true) {
-    if (!animate) document.body.style.transition = 'none';
-    document.body.classList.add('dark-mode');
-    if (!animate) setTimeout(() => { document.body.style.transition = ''; }, 50);
+    if (!animate) document.documentElement.style.transition = 'none';
+    document.documentElement.classList.add('dark-mode');
+    if (!animate) setTimeout(() => { document.documentElement.style.transition = ''; }, 50);
     _updateToggleUI(true);
 }
 
 function _applyLight(animate = true) {
-    if (!animate) document.body.style.transition = 'none';
-    document.body.classList.remove('dark-mode');
-    if (!animate) setTimeout(() => { document.body.style.transition = ''; }, 50);
+    if (!animate) document.documentElement.style.transition = 'none';
+    document.documentElement.classList.remove('dark-mode');
+    if (!animate) setTimeout(() => { document.documentElement.style.transition = ''; }, 50);
     _updateToggleUI(false);
 }
 
@@ -64,7 +62,7 @@ function _updateToggleUI(isDark) {
     const btn = document.getElementById('theme-toggle-btn');
     const label = document.getElementById('theme-toggle-label');
 
-    const dark = isDark ?? document.body.classList.contains('dark-mode');
+    const dark = isDark ?? document.documentElement.classList.contains('dark-mode');
 
     if (btn) btn.title = dark ? 'Ganti ke Mode Terang' : 'Ganti ke Mode Gelap';
     if (label) label.textContent = dark ? 'Mode Terang' : 'Mode Gelap';

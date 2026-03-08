@@ -134,9 +134,9 @@ body {
 }
 
 /* ============================================================
-   DARK MODE — aktif via body.dark-mode
+   DARK MODE — aktif via html.dark-mode body
    ============================================================ */
-body.dark-mode {
+html.dark-mode body {
     /* Override semua color tokens */
     --color-white: #1e2433;
     --color-gray-50: #252d3d;
@@ -161,82 +161,83 @@ body.dark-mode {
 }
 
 /* Dark mode specific adjustments */
-body.dark-mode .card {
+html.dark-mode body .card {
     background: #1e2433;
     border-color: #2d3748;
 }
 
-body.dark-mode .sidebar {
+html.dark-mode body .sidebar {
     background: #161b2b;
     border-color: #2d3748;
+    z-index: 1000 !important;
 }
 
-body.dark-mode .modal-content {
+html.dark-mode body .modal-content {
     background: #1e2433;
 }
 
-body.dark-mode input,
-body.dark-mode select,
-body.dark-mode textarea {
+html.dark-mode body input,
+html.dark-mode body select,
+html.dark-mode body textarea {
     background: #252d3d;
     color: var(--color-gray-800);
     border-color: #374151;
 }
 
-body.dark-mode input::placeholder {
+html.dark-mode body input::placeholder {
     color: #6b7280;
 }
 
-body.dark-mode .btn-secondary {
+html.dark-mode body .btn-secondary {
     background: #252d3d;
     color: #e5e7eb;
     border-color: #374151;
 }
 
-body.dark-mode .btn-secondary:hover {
+html.dark-mode body .btn-secondary:hover {
     background: #2d3748;
 }
 
-body.dark-mode table thead {
+html.dark-mode body table thead {
     background: #252d3d;
 }
 
-body.dark-mode tbody tr:hover {
+html.dark-mode body tbody tr:hover {
     background: #252d3d;
 }
 
 
 
-body.dark-mode .nav-item {
+html.dark-mode body .nav-item {
     color: #9ca3af;
 }
 
-body.dark-mode .nav-item:hover {
+html.dark-mode body .nav-item:hover {
     background: #252d3d;
 }
 
-body.dark-mode .nav-item.active {
+html.dark-mode body .nav-item.active {
     background: rgba(16, 185, 129, 0.15);
 }
 
-body.dark-mode .stat-card {
+html.dark-mode body .stat-card {
     background: #1e2433;
 }
 
-body.dark-mode .sync-panel {
+html.dark-mode body .sync-panel {
     background: #252d3d;
     border-color: #374151;
 }
 
-body.dark-mode .toast {
+html.dark-mode body .toast {
     background: #374151;
 }
 
-body.dark-mode ::-webkit-scrollbar-track {
+html.dark-mode body ::-webkit-scrollbar-track {
     background: #252d3d;
 }
 
-body.dark-mode ::-webkit-scrollbar-thumb {
+html.dark-mode body ::-webkit-scrollbar-thumb {
     background: #4b5563;
 }
 

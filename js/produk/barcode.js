@@ -53,20 +53,74 @@ async function startScanning(elementId = 'barcode-scanner-container') {
             ]
         };
 
-        await html5QrcodeScanner.start(
-            { facingMode: "environment" }, // Use back camera
-            config,
-            onScanSuccess,
-            onScanFailure
-        );
+        try {
+            // 1. Coba deteksi kamera dan paksa pilih kamera belakang jika tersedia
+            const cameras = await Html5Qrcode.getCameras();
+            if (cameras && cameras.length > 0) {
+                let cameraId = cameras[0].id; // Default ke kamera pertama (bisa jadi depan)
+
+                // Cari kamera yang memiliki kata 'back', 'belakang', atau 'environment' (HP)
+                const backCamera = cameras.find(cam =>
+                    cam.label.toLowerCase().includes('back') ||
+                    cam.label.toLowerCase().includes('belakang') ||
+                    cam.label.toLowerCase().includes('environment') ||
+                    cam.label.toLowerCase().includes('0, facing back')
+                );
+
+                if (backCamera) {
+                    cameraId = backCamera.id;
+                }
+
+                await html5QrcodeScanner.start(
+                    cameraId,
+                    config,
+                    onScanSuccess,
+                    onScanFailure
+                );
+            } else {
+                throw new Error("Daftar kamera tidak ditemukan");
+            }
+        } catch (errFallback) {
+            console.warn("Pencarian ID kamera gagal, mencoba menggunakan facingMode standar...", errFallback);
+
+            // 2. Jika gagal pakai ID, fallback pakai facingMode environment, kalau gagal lagi turun ke mode default
+            try {
+                await html5QrcodeScanner.start(
+                    { facingMode: "environment" },
+                    config,
+                    onScanSuccess,
+                    onScanFailure
+                );
+            } catch (errUserMode) {
+                console.warn("Kamera belakang (environment) tidak terbaca, mencoba kamera depan/default...", errUserMode);
+                // 3. Fallback level akhir: biarkan browser yang memilih kamera seadanya
+                await html5QrcodeScanner.start(
+                    { facingMode: "user" },
+                    config,
+                    onScanSuccess,
+                    onScanFailure
+                );
+            }
+        }
 
         isScanning = true;
         console.log('Barcode scanner started');
 
     } catch (error) {
         console.error('Error starting scanner:', error);
-        const errorMsg = error.message || error.name || error || 'Unknown error';
+
+        let errorMsg = error.message || error.name || error || 'Unknown error';
+        if (error.name === 'NotReadableError') {
+            errorMsg = "Kamera sedang digunakan di aplikasi lain atau memori penuh (NotReadableError). Coba tutup aplikasi lain atau refresh.";
+        } else if (error.name === 'NotAllowedError') {
+            errorMsg = "Izin akses kamera ditolak. Izinkan akses kamera melalui setelan browser Anda.";
+        }
+
         showToast('Gagal memulai scanner: ' + errorMsg, 'error');
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.clear().catch(e => console.log('Clear scanner failed on catch:', e));
+            html5QrcodeScanner = null;
+        }
         isScanning = false;
     }
 }

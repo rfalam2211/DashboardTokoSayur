@@ -8,7 +8,7 @@
     <meta name="description" content="Aplikasi manajemen toko offline untuk mengelola stok, penjualan, dan keuangan">
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#10b981">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Ida Buah">
     <link rel="manifest" href="manifest.json">
@@ -497,24 +497,23 @@
                         <h3>Pilih Produk</h3>
                     </div>
                     <div class="card-body">
-                        <div class="search-box-enhanced">
-                            <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z"
-                                    stroke="currentColor" stroke-width="2" />
-                                <path d="M19 19L14.65 14.65" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" />
-                            </svg>
-                            <input type="text" id="search-pos-products" placeholder="Cari produk untuk ditambahkan...">
-                            <button class="clear-search" id="clear-pos-search-btn" style="display: none;">
-                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" />
+                        <div style="display: flex; gap: var(--spacing-sm); align-items: center; width: 100%;">
+                            <div class="search-box-enhanced">
+                                <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z"
+                                        stroke="currentColor" stroke-width="2" />
+                                    <path d="M19 19L14.65 14.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                                 </svg>
-                            </button>
-                            <button class="btn btn-icon" id="scan-barcode-pos-btn" title="Scan Barcode">
+                                <input type="text" id="search-pos-products" placeholder="Cari produk untuk ditambahkan...">
+                                <button class="clear-search" id="clear-pos-search-btn" style="display: none;">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <button class="btn btn-icon" id="scan-barcode-pos-btn" title="Scan Barcode"
+                                style="flex-shrink: 0; width: 44px; height: 44px;">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
                                     <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor"
