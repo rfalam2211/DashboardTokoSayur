@@ -2,9 +2,11 @@
 
 A modern **Progressive Web App (PWA)** for managing a small grocery/fruit store. Built with vanilla HTML, CSS, and JavaScript — powered by **Supabase cloud database** with real-time multi-device sync, offline queue, and full PWA installation support.
 
+> **Live Demo**: [https://dashboard-toko-sayur.vercel.app/](https://dashboard-toko-sayur.vercel.app/)  
+> **Katalog Publik**: [https://dashboard-toko-sayur.vercel.app/catalogue.html](https://dashboard-toko-sayur.vercel.app/catalogue.html)  
 > **Live Database**: Supabase Cloud (PostgreSQL)  
 > **Version**: 9.0.0  
-> **Last Updated**: 1 Maret 2026  
+> **Last Updated**: 11 Maret 2026  
 
 ---
 
@@ -27,7 +29,7 @@ A modern **Progressive Web App (PWA)** for managing a small grocery/fruit store.
 - Tambah / edit / hapus produk
 - Field: nama, harga, stok, kategori, barcode, URL gambar
 - Pencarian & filter kategori
-- Scan barcode via kamera (html5-qrcode)
+- Scan barcode via kamera (prioritas kamera belakang, html5-qrcode)
 - QR Code otomatis untuk setiap produk di katalog
 
 ### 💰 Point of Sale (POS)
@@ -60,12 +62,14 @@ A modern **Progressive Web App (PWA)** for managing a small grocery/fruit store.
 
 ### 👤 Manajemen Pengguna
 - Multi-user dengan role-based access control
-- Role: **Admin** (akses penuh) dan **Kasir** (akses terbatas)
+- Role: **Developer** (akses sistem), **Admin** (akses penuh) dan **Kasir** (akses terbatas)
+- Fitur Show Password untuk kemudahan login & manajemen
 - Autentikasi dengan bcrypt password hashing
 - Sesi tersimpan aman
 
 ### 🌐 Katalog Publik (`catalogue.html`)
 - Halaman katalog yang bisa dibagikan ke pelanggan
+- **Akses Langsung**: [Lihat Katalog Pelanggan](https://dashboard-toko-sayur.vercel.app/catalogue.html)
 - Tampilkan foto produk, harga, stok
 - Filter kategori dinamis
 - QR Code untuk share link katalog
@@ -124,7 +128,8 @@ ida-buah/
 │   ├── sidebar.css         # Sidebar + sync panel + dark toggle
 │   ├── components.css      # Komponen UI reusable
 │   ├── pages.css           # Page-specific styles
-│   ├── right-sidebar.css   # Right sidebar
+│   ├── catalogue.css       # Style untuk katalog
+│   ├── flatpickr.min.css   # Tema kalender (datepicker)
 │   └── responsive.css      # Breakpoints responsive
 │
 ├── js/
@@ -200,6 +205,7 @@ http://localhost:8000/login.html
 ### 3. Login Default
 | Role | Username | Password |
 |------|----------|----------|
+| Developer | `developer` | `dev123` |
 | Admin | `admin` | `admin123` |
 | Kasir | `kasir` | `kasir123` |
 
@@ -207,6 +213,27 @@ http://localhost:8000/login.html
 1. Buka app di Chrome
 2. Tap menu ⋮ → **"Add to Home screen"** / **"Install App"**
 3. Launch dari home screen seperti app native
+
+---
+
+## ☁️ Deployment (Vercel)
+
+Proyek ini sudah dikonfigurasi untuk auto-deploy di **Vercel** setiap kali ada push ke GitHub (`main` branch).
+**Live Web App**: [https://dashboard-toko-sayur.vercel.app/](https://dashboard-toko-sayur.vercel.app/)
+
+### Konfigurasi Vercel (`vercel.json`)
+File `vercel.json` telah disiapkan untuk memastikan PWA berjalan dengan lancar saat di-hosting:
+- **Cache-Control**: Mencegah browser melakukan cache yang terlalu lama pada file `service-worker.js`, `.html`, dan `.js`, sehingga pembaruan aplikasi PWA bisa langsung diterima pengguna.
+- **Security Headers**: Mengaktifkan mitigasi dasar keamanan web seperti proteksi XSS (Cross-Site Scripting) dan X-Frame-Options dilarang untuk mencegah _Clickjacking_.
+
+### Cara Update Live App
+Untuk memperbarui versi yang sedang online di Vercel, cukup push perubahan ke GitHub:
+```bash
+git add .
+git commit -m "feat: deskripsi perubahan"
+git push origin main
+```
+Vercel secara otomatis akan mem-build dan mendistribusikan versi terbaru.
 
 ---
 
@@ -288,6 +315,6 @@ Dibuat dengan ❤️ untuk **Ida Buah** — toko buah & sayur keluarga.
 ---
 
 **Version**: 9.0.0  
-**Last Updated**: 1 Maret 2026  
+**Last Updated**: 11 Maret 2026  
 **Database**: Supabase Cloud (PostgreSQL)  
 **PWA**: Service Worker v6  
