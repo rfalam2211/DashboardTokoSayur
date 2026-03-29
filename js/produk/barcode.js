@@ -32,8 +32,11 @@ async function startScanning(elementId = 'barcode-scanner-container') {
     }
 
     try {
-        // Request camera permission
-        await navigator.mediaDevices.getUserMedia({ video: true });
+        // Request camera permission first with environment mode, then stop it 
+        // immediately to release the hardware lock. This ensures permission is granted
+        // without preventing the scanner from acquiring the back camera.
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        stream.getTracks().forEach(track => track.stop());
 
         // Initialize scanner
         html5QrcodeScanner = new Html5Qrcode(elementId);
