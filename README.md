@@ -1,5 +1,10 @@
 # 🥬 Ida Buah — Store Management System
 
+[![Version](https://img.shields.io/badge/version-9.0.0-blue.svg)](https://github.com/rfalam2211/DashboardTokoSayur)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![PWA](https://img.shields.io/badge/PWA-Ready-orange.svg)](https://dashboard-toko-sayur.vercel.app/)
+[![Database](https://img.shields.io/badge/Database-Supabase-brightgreen.svg)](https://supabase.com/)
+
 A modern **Progressive Web App (PWA)** for managing a small grocery/fruit store. Built with vanilla HTML, CSS, and JavaScript — powered by **Supabase cloud database** with real-time multi-device sync, offline queue, and full PWA installation support.
 
 > **Live Demo**: [https://dashboard-toko-sayur.vercel.app/](https://dashboard-toko-sayur.vercel.app/)  
@@ -95,6 +100,11 @@ A modern **Progressive Web App (PWA)** for managing a small grocery/fruit store.
 ---
 
 ## 🛠️ Teknologi
+
+![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/css3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
 
 | Layer | Teknologi |
 |-------|-----------|
@@ -262,22 +272,6 @@ const SUPABASE_ANON_KEY = 'your-anon-key';
 
 ### Aktifkan Supabase Realtime:
 Di Supabase Dashboard → **Table Editor → Replication**, aktifkan Realtime untuk tabel `products`, `transactions`, dan `debts`.
-
----
-
-## 🗺️ Roadmap — Semua Phase Selesai ✅
-
-| Phase | Fitur | Status |
-|-------|-------|--------|
-| Phase 1 | Infrastructure & Mobile UI | ✅ Selesai |
-| Phase 2 | Barcode Scanning | ✅ Selesai |
-| Phase 3 | Discount System | ✅ Selesai |
-| Phase 4 | Public Stock Catalogue | ✅ Selesai |
-| Phase 5 | Debt & Customer Management | ✅ Selesai |
-| Phase 6 | Catalogue Enhancement (QR, Images, Share) | ✅ Selesai |
-| Phase 7 | UX Polish & Bug Fixing | ✅ Selesai |
-| Phase 8 | Cloud Sync & Supabase Realtime | ✅ Selesai |
-| Phase 9 | Performance & PWA (Dark Mode, PDF Export) | ✅ Selesai |
 
 ---
 
